@@ -5,24 +5,28 @@ import logging
 import os
 import time
 
-from utils import qemu_monitor_command
+from qemu_interface import QemuInterface
 
 
 class InterruptWatchdog:
-    def __init__(self, tmp_dir: str, logger: logging.Logger):
+    def __init__(self, tmp_dir: str, qemu_interface: QemuInterface,
+                 logger: logging.Logger):
         self.interrupt_logfile = f'{tmp_dir}/int.log'
         self.logger = logger
-        self.sleep_time = 0.5
 
+        self.qemu_interface = qemu_interface
+
+        self.sleep_time = 0.5
         self.file_pos = 0
 
-    def start(self, qemu_input: TextIO):
+    def start(self):
         self.clean()
-        qemu_monitor_command(f'logfile {self.interrupt_logfile}\n', qemu_input)
-        qemu_monitor_command('log int\n', qemu_input)
+        self.qemu_interface.monitor_command(
+                f'logfile {self.interrupt_logfile}\n')
+        self.qemu_interface.monitor_command('log int\n')
 
-    def stop(self, qemu_input: TextIO):
-        qemu_monitor_command('log none\n', qemu_input)
+    def stop(self):
+        self.qemu_interface.monitor_command('log none\n')
         os.remove(self.interrupt_logfile)
 
     def clean(self):

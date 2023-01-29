@@ -5,7 +5,6 @@ import argparse
 import logging
 import os
 import sys
-import time
 import pathlib
 import threading
 
@@ -14,7 +13,7 @@ from constants import TestStatus, TEST_FOLDER_PATH, TEST_RUN_DIR
 from test_runner import create_snapshot, run_tests
 from tortillas_config import TortillasConfig
 from progress_bar import ProgressBar
-from test import Test, TestResult
+from test import Test
 from test_config import NoTestConfigFound
 
 

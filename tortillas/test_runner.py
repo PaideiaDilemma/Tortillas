@@ -2,18 +2,18 @@ from __future__ import annotations
 from typing import Callable, TextIO
 
 import subprocess
-import shlex
-import pathlib
 import time
 import threading
+import pathlib
 
-from utils import get_logger, qemu_monitor_command, sweb_input_via_qemu
+from utils import get_logger
 from constants import TestStatus, TEST_RUN_DIR, SWEB_BUILD_DIR
 from interrupt_watchdog import InterruptWatchdog
 from tortillas_config import TortillasConfig
-from test import Test
+from test import Test, TestResult
 from log_parser import LogParser
 from progress_bar import ProgressBar
+from qemu_interface import QemuInterface
 
 
 def run_tests(tests: list[Test], architecture: str, progress_bar: ProgressBar,
@@ -80,33 +80,11 @@ def run_tests(tests: list[Test], architecture: str, progress_bar: ProgressBar,
     # Testing finished
 
 
-def popen_qemu(architecture: str, qcow2_path: str, fifos: str, log_file: str,
-               vmstate: str | None = None) -> subprocess.Popen:
-    if architecture == 'x86_64':
-        cmd = (f'qemu-system-x86_64 -m 8M -cpu qemu64 '
-               f'-drive file={qcow2_path},index=0,media=disk '
-               f'-debugcon file:{log_file} -monitor pipe:{fifos} '
-               '-nographic -display none -serial /dev/null')
-
-    elif architecture == 'x86_32':
-        cmd = (f'qemu-system-i386 -m 8M -cpu qemu32 '
-               f'-drive file={qcow2_path},index=0,media=disk '
-               f'-debugcon file:{log_file} -monitor pipe:{fifos} '
-               '-nographic -display none -serial /dev/null')
-
+def _clean_tmp_dir(tmp_dir):
+    if pathlib.Path(tmp_dir).is_dir():
+        subprocess.run(f'rm {tmp_dir}/*', shell=True)
     else:
-        log = get_logger('global')
-        log.error(
-            f'Architecture {architecture} not yet supported in tortillas')
-        exit(-1)
-
-    if vmstate:
-        cmd += f' -loadvm {vmstate}'
-
-    return subprocess.Popen(shlex.split(cmd),
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT,
-                            stdin=subprocess.DEVNULL)
+        subprocess.run(['mkdir', tmp_dir], check=True)
 
 
 def create_snapshot(architecture: str, label: str, config: TortillasConfig):
@@ -118,18 +96,9 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
         return_reg = 'EAX'
 
     tmp_dir = f'{TEST_RUN_DIR}/snapshot'
-    if pathlib.Path(tmp_dir).is_dir():
-        log.debug('Removing old files')
-        subprocess.run(f'rm {tmp_dir}/*', shell=True)
-    else:
-        log.debug('Creating new tmp directory')
-        subprocess.run(['mkdir', tmp_dir], check=True)
+    _clean_tmp_dir(tmp_dir)
 
-    log.debug('Creating pipes for qemu IO')
-    subprocess.run(['mkfifo', '-m', 'a=rw', f'{tmp_dir}/qemu.in'],
-                   check=True)
-    subprocess.run(['mkfifo', '-m', 'a=rw', f'{tmp_dir}/qemu.out'],
-                   check=True)
+    snapshot_qcow2_path = f'{tmp_dir}/SWEB.qcow2'
 
     subprocess.run(['qemu-img', 'create', '-f', 'qcow2', '-F', 'qcow2', '-b',
                     f'{SWEB_BUILD_DIR}/SWEB.qcow2',
@@ -137,19 +106,18 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
                    check=True,
                    stdout=subprocess.DEVNULL)
 
-    log.debug(f'Starting qemu (arch={architecture})')
-    qemu_process = popen_qemu(architecture,
-                              qcow2_path=f'{tmp_dir}/SWEB.qcow2',
-                              fifos=f'{tmp_dir}/qemu',
-                              log_file=f'{tmp_dir}/out.log')
+    with QemuInterface(
+            tmp_dir=tmp_dir,
+            qcow2_path=snapshot_qcow2_path,
+            arch=architecture,
+            logger=log
+            ) as qemu:
 
-    if qemu_process.poll():
-        log.error('Qemu_process not alive any more!')
-        exit(-1)
+        if not qemu.is_alive():
+            exit(-1)
 
-    with open(f'{tmp_dir}/qemu.in', 'w') as qemu_input:
-        interrupt_watchdog = InterruptWatchdog(tmp_dir, log)
-        interrupt_watchdog.start(qemu_input)
+        interrupt_watchdog = InterruptWatchdog(tmp_dir, qemu, log)
+        interrupt_watchdog.start()
 
         log.debug('Waiting for bootup...')
 
@@ -167,42 +135,27 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
 
         log.info('Successful bootup!')
 
-        interrupt_watchdog.stop(qemu_input)
-        interrupt_watchdog.clean()
+        interrupt_watchdog.stop()
 
         time.sleep(0.1)
 
-        qemu_monitor_command(f'savevm {label}\n', file=qemu_input)
-        qemu_monitor_command('quit\n', file=qemu_input)
+        qemu.monitor_command(f'savevm {label}\n')
+        qemu.monitor_command('quit\n')
 
-        qemu_process.wait()
-
-    subprocess.run(['cp', f'{tmp_dir}/SWEB.qcow2',
-                          f'{TEST_RUN_DIR}/SWEB-snapshot.qcow2'], check=True)
+    subprocess.run(['cp', snapshot_qcow2_path,
+                    f'{TEST_RUN_DIR}/SWEB-snapshot.qcow2'], check=True)
 
 
 def _run(test: Test, architecture: str, config: TortillasConfig,
-        callback: Callable[['Test'], None] | None = None):
+         callback: Callable[['Test'], None] | None = None):
     log = test.logger
-
-    tmp_dir = test.get_tmp_dir()
 
     return_reg = 'RAX'
     if (architecture == 'x86_32'):
         return_reg = 'EAX'
 
-    if pathlib.Path(tmp_dir).is_dir():
-        log.debug('Removing old files')
-        subprocess.run(f'rm {tmp_dir}/*', shell=True)
-    else:
-        log.debug('Creating new tmp directory')
-        subprocess.run(['mkdir', tmp_dir], check=True)
-
-    log.debug('Creating pipes for qemu IO')
-    subprocess.run(['mkfifo', '-m', 'a=rw', f'{tmp_dir}/qemu.in'],
-                   check=True)
-    subprocess.run(['mkfifo', '-m', 'a=rw', f'{tmp_dir}/qemu.out'],
-                   check=True)
+    tmp_dir = test.get_tmp_dir()
+    _clean_tmp_dir(tmp_dir)
 
     log.debug(f'Copying SWEB.qcow2 to {tmp_dir}')
 
@@ -212,28 +165,29 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
 
     log.debug(
         f'Starting qemu snapshot {TEST_RUN_DIR} (arch={architecture})')
-    qemu_process = popen_qemu(architecture,
-                              qcow2_path=snapshot_path,
-                              fifos=f'{tmp_dir}/qemu',
-                              log_file=f'{tmp_dir}/out.log',
-                              vmstate=TEST_RUN_DIR)
 
-    if qemu_process.poll():
-        log.error('Qemu_process not alive any more!')
-        test.result.retry = True
-        if callback:
-            callback(test)
-        return
+    with QemuInterface(
+            tmp_dir=tmp_dir,
+            qcow2_path=snapshot_path,
+            arch=architecture,
+            logger=log,
+            vmstate=TEST_RUN_DIR
+            ) as qemu:
 
-    with open(f'{tmp_dir}/qemu.in', 'w') as qemu_input:
-        interrupt_watchdog = InterruptWatchdog(tmp_dir, test.logger)
-        interrupt_watchdog.start(qemu_input)
+        if not qemu.is_alive():
+            test.result.retry = True
+            if callback:
+                callback(test)
+            return
+
+        interrupt_watchdog = InterruptWatchdog(tmp_dir, qemu, test.logger)
+        interrupt_watchdog.start()
 
         # run_pra_test_selector(qemu_input,
         #                     interrupt_watchdog, return_reg)
 
         log.info('Starting test execution')
-        sweb_input_via_qemu(f'{test.name}.sweb\n', file=qemu_input)
+        qemu.sweb_input(f'{test.name}.sweb\n')
 
         timeout = config.default_test_timeout_secs
         # Overwrite timeout if in test config
@@ -257,15 +211,13 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
             test.result.add_execution_error('Test killed, because no more '
                                             'interrupts were comming')
 
-        interrupt_watchdog.stop(qemu_input)
+        interrupt_watchdog.stop()
 
         # Wait a bit for cleanup and debug output to be flushed
         time.sleep(1)
 
         log.debug('Quitting')
-        qemu_monitor_command('quit\n', file=qemu_input)
-
-        qemu_process.wait()
+        qemu.monitor_command('quit\n')
 
     parser = LogParser(test, config)
     parser.parse()
