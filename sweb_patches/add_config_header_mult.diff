@@ -1,0 +1,34 @@
+diff --git a/userspace/tests/mult.c b/userspace/tests/mult.c
+index fd27b643..d1cab427 100644
+--- a/userspace/tests/mult.c
++++ b/userspace/tests/mult.c
+@@ -1,3 +1,11 @@
++/*
++#Tortillas test config
++category: basic
++tags: [basic, multiplication]
++description: "multiplys some numbers"
++expect_exit_codes: [1237619379]
++*/
++
+ #include "../../common/include/kernel/syscall-definitions.h"
+ 
+ 
+@@ -35,7 +43,7 @@ int main()
+     {
+       axa[x][y]= getRandom();
+       bxb[x][y] = getRandom();
+-      
++
+     }
+   }
+   for (x=0;x<ARRAY_SIZE;++x)
+@@ -48,7 +56,7 @@ int main()
+   for (x=0;x<ARRAY_SIZE;++x)
+     for (y=0;y<ARRAY_SIZE;++y)
+       sum += cxc[x][y];
+-  
++
+  // printf("Result is %d",sum);
+   return sum;
+ }

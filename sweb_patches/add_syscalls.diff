@@ -1,0 +1,30 @@
+diff --git a/common/include/kernel/syscall-definitions.h b/common/include/kernel/syscall-definitions.h
+index dd99d197..86ae9901 100644
+--- a/common/include/kernel/syscall-definitions.h
++++ b/common/include/kernel/syscall-definitions.h
+@@ -17,3 +17,5 @@
+ #define sc_createprocess 191
+ #define sc_trace 252
+ 
++#define sc_tortillas_bootup 69420
++#define sc_tortillas_finished 42069
+diff --git a/userspace/tests/shell.c b/userspace/tests/shell.c
+index c5c9f6b4..32d65eae 100644
+--- a/userspace/tests/shell.c
++++ b/userspace/tests/shell.c
+@@ -214,6 +214,7 @@ int main(int argc, char *argv[])
+ 
+   __syscall(sc_pseudols, (size_t)"/usr/", (size_t)dir_content, sizeof(dir_content), 0, 0);
+ 
++  __syscall(sc_tortillas_bootup, 0, 0, 0, 0, 0);
+   do
+   {
+     printf("\n%s %s%s", "SWEB:", cwd, "> ");
+@@ -221,6 +222,7 @@ int main(int argc, char *argv[])
+     handle_command(buffer, BUFFER_SIZE);
+     for (size_t a = 0; a < BUFFER_SIZE; a++)
+       buffer[a] = 0;
++    __syscall(sc_tortillas_finished, 0, 0, 0, 0, 0);
+ 
+   } while (running);
+ 
