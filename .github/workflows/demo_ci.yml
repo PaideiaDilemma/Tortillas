@@ -35,9 +35,11 @@ jobs:
           python3 ../tortillas/main.py
 
       - uses: actions/upload-artifact@v3
+        if: always()
         with:
-          name: Test logs
+          name: test_logs
           path: /tmp/sweb/tortillas/**/out.log
 
       - name: Adding markdown
+        if: always()
         run: cat /tmp/sweb/tortillas_summary.md >> $GITHUB_STEP_SUMMARY
