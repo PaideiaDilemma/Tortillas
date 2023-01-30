@@ -46,11 +46,11 @@ def get_tests_to_run(tortillas_config: TortillasConfig, sweb_src_folder: str,
 
     if category:
         tests = [test for test in tests
-                 if test.config.category() in category]
+                 if test.config.category in category]
 
     if tag:
         tests = [test for test in tests
-                 if any(tag in test.config.tags() for tag in tag)]
+                 if any(tag in test.config.tags for tag in tag)]
 
     disabled_tests = [test.name for test in tests if test.config.disabled]
     tests = [test for test in tests if not test.config.disabled]

@@ -8,7 +8,7 @@ from test_config import TestConfig
 
 class Test:
     def __init__(self, name: str, num: int, src_folder: str,
-                 config: TortillasConfig, pra_selector_programm: str = ''):
+                 config: TortillasConfig):
         self.name = name
         self.run_number = num
 

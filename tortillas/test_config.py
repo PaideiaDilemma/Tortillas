@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import Optional
 
 import sys
 import yaml
@@ -17,14 +16,13 @@ class TestConfig():
     category: str
     description: str
 
-    disabled: Optional[bool] = None
+    disabled: bool = False
+    timeout: int = 0
 
-    timeout: Optional[int] = 0
-    expect_timeout: Optional[bool] = None
+    expect_timeout: bool = False
+    expect_exit_codes: list[int] | None = None
 
-    expect_exit_codes: Optional[list[int]] = None
-
-    tags: Optional[list[str]] = None
+    tags: list[str] | None = None
 
     def __init__(self, test_name: str, test_src_path: str):
         self.test_name = test_name

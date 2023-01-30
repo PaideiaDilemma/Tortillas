@@ -1,9 +1,8 @@
 from __future__ import annotations
-from typing import Optional
 
 import re
-import yaml
 import sys
+import yaml
 import dataclasses
 
 from utils import get_logger
@@ -20,11 +19,11 @@ class TortillasConfig:
     sc_tortillas_bootup: int
     sc_tortillas_finished: int
 
-    build_directory: str = r'/tmp/sweb'
-    test_run_directory: str = r'/tmp/sweb/tortillas'
-
     parse: list[ParseConfigEntry] = dataclasses.field(default_factory=list)
     analyze: list[AnalyzeConfigEntry] = dataclasses.field(default_factory=list)
+
+    build_directory: str = r'/tmp/sweb'
+    test_run_directory: str = r'/tmp/sweb/tortillas'
 
     def __init__(self):
         self.logger = get_logger('Tortillas yaml config', prefix=True)
@@ -62,10 +61,8 @@ class ParseConfigEntry:
     name: str
     scope: str
     pattern: str
-    mode: Optional[str] = dataclasses.field(default='default')
-    split: Optional[str] = dataclasses.field(default_factory=str)
 
-    pattern_compiled: Optional[re.Pattern] = None
+    pattern_compiled: re.Pattern | None = None
 
     def compile_pattern(self) -> ParseConfigEntry:
         self.pattern_compiled = re.compile(self.pattern, re.DOTALL)
@@ -76,4 +73,4 @@ class ParseConfigEntry:
 class AnalyzeConfigEntry:
     name: str
     mode: str
-    status: Optional[str] = dataclasses.field(default_factory=str)
+    status: str = dataclasses.field(default_factory=str)

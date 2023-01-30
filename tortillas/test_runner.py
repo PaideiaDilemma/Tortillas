@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Callable, TextIO
+from typing import Callable
 
 import sys
 import time
@@ -182,9 +182,6 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
                 callback(test)
             return
 
-        # run_pra_test_selector(qemu_input,
-        #                     interrupt_watchdog, return_reg)
-
         log.info('Starting test execution')
         qemu.sweb_input(f'{test.name}.sweb\n')
 
@@ -221,26 +218,3 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
     log.info('Done!')
     if callback:
         callback(test)
-
-
-def run_pra_test_selector(test: Test, qemu_input: TextIO,
-                          interrupt_watchdog: InterruptWatchdog,
-                          return_reg: str, config: TortillasConfig
-                          ):
-
-    if not test.config.pra_selector_programm:
-        return
-
-    test.logger.info('Running PRA selector')
-
-    sweb_input_via_qemu(f'{test.pra_selector_programm}.sweb\n',
-                        file=qemu_input)
-
-    # Wait for the interrupt, that signals program completion
-    interrupt_watchdog.wait_until(int_num='80',
-                                  int_regs={
-                                      return_reg: config.sc_tortillas_finished
-                                  },
-                                  timeout=config.default_test_timeout_secs)
-
-    interrupt_watchdog.clean()
