@@ -10,18 +10,17 @@ import threading
 
 from utils import get_logger
 from constants import TestStatus, TEST_FOLDER_PATH, QEMU_VMSTATE_TAG
-from test_runner import create_snapshot, run_tests
+from test_runner import Test, create_snapshot, run_tests
 from tortillas_config import TortillasConfig
 from progress_bar import ProgressBar
-from test import Test
-from test_config import NoTestConfigFound
+from test_specification import NoTestSpecFound
 
 
 # On exception, exit the program
 def exception_hook(args):
     log = get_logger('global')
     log.error("XO", exc_info=args)
-    os._exit(-1)
+    sys.exit(-1)
 
 
 # Set the exception hook for all threads
@@ -29,9 +28,8 @@ threading.excepthook = exception_hook
 
 
 def get_tests_to_run(tortillas_config: TortillasConfig, sweb_src_folder: str,
-                     test_glob: str, repeat: bool, category: list[str],
+                     test_glob: str, repeat: int, category: list[str],
                      tag: list[str], **kwargs) -> tuple[list[Test], list[str]]:
-    # Register all tests
     file_paths = list(pathlib.Path(
         f'{sweb_src_folder}/{TEST_FOLDER_PATH}').glob(f'{test_glob}*.c'))
 
@@ -39,24 +37,25 @@ def get_tests_to_run(tortillas_config: TortillasConfig, sweb_src_folder: str,
     for file_path in file_paths:
         for num in range(repeat):
             try:
-                tests.append(Test(file_path.stem, num+1, sweb_src_folder,
+                tests.append(Test(file_path.stem, num, sweb_src_folder,
                                   tortillas_config))
-            except NoTestConfigFound:
+            except NoTestSpecFound:
                 continue
 
     if category:
         tests = [test for test in tests
-                 if test.config.category in category]
+                 if test.spec.category in category]
 
     if tag:
         tests = [test for test in tests
-                 if any(tag in test.config.tags for tag in tag)]
+                 if any(tag in test.spec.tags for tag in tag)]
 
-    disabled_tests = [test.name for test in tests if test.config.disabled]
-    tests = [test for test in tests if not test.config.disabled]
+    disabled_tests = [test.name for test in tests if test.spec.disabled]
+    tests = [test for test in tests if not test.spec.disabled]
 
-    tests.sort(key=(lambda test: repr(test)), reverse=True)
-    tests.sort(key=(lambda test: test.config.timeout))
+    tests.sort(key=(lambda test: test.name), reverse=True)
+    if repeat > 1:
+        tests.sort(key=(lambda test: test.run_number))
 
     return tests, disabled_tests
 
@@ -65,7 +64,8 @@ def get_markdown_test_summary(tests: list[Test],
                               disabled_tests: list[Test],
                               success: bool) -> str:
 
-    def markdown_table_row(cols, widths=[40, 20]) -> str:
+    def markdown_table_row(cols: list[str],
+                           widths: list[int] = [40, 20]) -> str:
         assert (len(widths) == len(cols))
         res = '|'
         for cell, width in zip(cols, widths):
@@ -76,7 +76,7 @@ def get_markdown_test_summary(tests: list[Test],
             res += f" {cell}{' '*padding}|"
         return res + '\n'
 
-    def markdown_table_delim(widths=[40, 20]):
+    def markdown_table_delim(widths: list[int] = [40, 20]):
         res = '|'
         for width in widths:
             res += f" {'-'*(width-3)} |"
@@ -105,22 +105,22 @@ def get_markdown_test_summary(tests: list[Test],
 
         for test in failed_tests:
             summary += f'### {repr(test)} - {test.get_tmp_dir()}/out.log\n\n'
-            for line in test.result.errors:
-                if line[-1] not in ['\n', '\r']:
-                    line = f'{line}\n'
+            for error in test.result.errors:
+                if error[-1] not in ['\n', '\r']:
+                    error = f'{error}\n'
 
-                if line[-2:] == '\n\n':
-                    line = line[:-1]
+                if error[-2:] == '\n\n':
+                    error = error[:-1]
 
-                if '=== Begin of backtrace' in line:
-                    summary += f'```\n{line}```'
+                if '=== Begin of backtrace' in error:
+                    summary += f'```\n{error}```'
                     continue
 
-                summary += f'- {line}'
+                summary += f'- {error}'
             summary += '\n'
 
-    with open('tortillas_summary.md', 'w') as f:
-        f.write(summary)
+    with open('tortillas_summary.md', 'w') as summary_file:
+        summary_file.write(summary)
 
     return summary
 
@@ -135,7 +135,7 @@ def main():
 
     parser.add_argument('-g', '--test-glob',
                         help='Identifier of testcases in the test source dir,'
-                             ' e.g. -b pthread (tests test_pthread*.c)',
+                             ' e.g. -b test_pthread (tests test_pthread*.c)',
                         default='')
 
     parser.add_argument('-c', '--category', type=str, nargs='*',
@@ -178,7 +178,7 @@ def main():
 
     log.info('Registered tests:')
     for test in tests:
-        log.info('- {}'.format(repr(test)))
+        log.info(f'- {repr(test)}')
     log.info('')
 
     # Build
@@ -187,7 +187,7 @@ def main():
         # This command is equivalent to setup_cmake.sh
         os.system(f'cmake -B\"{config.build_directory}\" -H.')
         os.chdir(config.build_directory)
-        os.system('echo yes | make {}'.format(args.arch))
+        os.system(f'echo yes | make {args.arch}')
     else:
         os.chdir(config.build_directory)
 
@@ -206,10 +206,9 @@ def main():
     progress_bar.update_main_status('Running tests')
     run_tests(tests, args.arch, progress_bar, config)
 
-    success = True
-    for test in tests:
-        if test.result.status in [TestStatus.FAILED, TestStatus.PANIC]:
-            success = False
+    success = not any(
+            test.result.status in (TestStatus.FAILED, TestStatus.PANIC)
+            for test in tests)
 
     if not success:
         log.error('Tortillas has failed!')

@@ -19,13 +19,14 @@ class ProgressBar:
             import enlighten
         except ImportError:
             self.no_bar = True
-            get_logger('default').warn(
+            get_logger('default').info(
                 'Consider installing \'enlighten\' for a fancy progress bar\n'
                 '   pip3 install enlighten\n')
             return
 
         self.progress_manager = enlighten.get_manager()
         self.justify_center = enlighten.Justify.CENTER
+        self.counters = {}
         self.create_main_status_bar()
 
     def __del__(self):
@@ -45,7 +46,7 @@ class ProgressBar:
             return
 
         self.status_bar = self.progress_manager.status_bar(
-            status_format=u'Tortillas{fill}{status}{fill}{elapsed}',
+            status_format='Tortillas{fill}{status}{fill}{elapsed}',
             color='bold_black_on_white',
             justify=self.justify_center,
             autorefresh=True,
@@ -63,12 +64,11 @@ class ProgressBar:
         if self.no_bar:
             return
 
-        self.counters = {}
         term = self.progress_manager.term
-        bar_format = u'{desc}{desc_pad} {count_00:d}/{total:d}|{bar}| ' + \
-                     u'R:' + term.blue(u'{count_0:{len_total}d}') + u' ' + \
-                     u'S:' + term.green(u'{count_1:{len_total}d}') + u' ' + \
-                     u'F:' + term.red(u'{count_2:{len_total}d}') + u' '
+        bar_format = '{desc}{desc_pad} {count_00:d}/{total:d}|{bar}| ' + \
+                     'R:' + term.blue('{count_0:{len_total}d}') + ' ' + \
+                     'S:' + term.green('{count_1:{len_total}d}') + ' ' + \
+                     'F:' + term.red('{count_2:{len_total}d}') + ' '
 
         counter = self.progress_manager.counter(total=total,
                                                 bar_format=bar_format,

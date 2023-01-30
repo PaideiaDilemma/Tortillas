@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import re
 import sys
-import yaml
 import dataclasses
+import yaml
 
 from utils import get_logger
 from constants import TORTILLAS_CONFIG_PATH
@@ -27,8 +27,8 @@ class TortillasConfig:
 
     def __init__(self):
         self.logger = get_logger('Tortillas yaml config', prefix=True)
-        with open(TORTILLAS_CONFIG_PATH, 'r') as f:
-            config_raw = f.read()
+        with open(TORTILLAS_CONFIG_PATH, 'r') as yaml_config_file:
+            config_raw = yaml_config_file.read()
 
             try:
                 config = yaml.safe_load(config_raw)

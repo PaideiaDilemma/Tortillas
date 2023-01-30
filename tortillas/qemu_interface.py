@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import TextIO
 
 import os
 import sys
@@ -27,6 +28,10 @@ class QemuInterface():
         self.fifos = f'{tmp_dir}/qemu'
         self.log_file = f'{tmp_dir}/out.log'
 
+        self.interrupt_watchdog: InterruptWatchdog
+        self.process: subprocess.Popen
+        self.input: TextIO
+
     def __enter__(self):
         self.logger.debug('Creating pipes for qemu IO')
 
@@ -41,7 +46,7 @@ class QemuInterface():
         self.logger.debug(f'Starting qemu (arch={self.arch})')
 
         self.process = self._popen_qemu()
-        self.input = open(f'{self.fifos}.in', 'w')
+        self.input = open(f'{self.fifos}.in', 'w', encoding='utf-8')
 
         if self.interrupts:
             self.interrupt_watchdog = InterruptWatchdog(self.tmp_dir, self)
@@ -68,7 +73,6 @@ class QemuInterface():
         if exc_type is not None:
             self.logger.error('Error while running tests',
                               exc_info=(exc_type, exc_value, traceback))
-            return (exc_type, exc_value, traceback)
 
     def _popen_qemu(self) -> subprocess.Popen:
         if self.arch == 'x86_64':
@@ -106,7 +110,7 @@ class QemuInterface():
         return True
 
     def monitor_command(self, data: list[str] | str):
-        if (not isinstance(data, list)):
+        if not isinstance(data, list):
             data = [data]
 
         for line in data:
@@ -115,7 +119,7 @@ class QemuInterface():
             # I ran into some problems without this sleep...
             # Somtimes got "tesT-pthread.." instead of "test_pthread"
             time.sleep(0.2)
-            if (len(line) != written_n):
+            if len(line) != written_n:
                 self.logger.error(
                     f'Tried to send {len(data)} bytes to input pipe. '
                     f'Actually send: {written_n}'
@@ -192,15 +196,15 @@ class InterruptWatchdog:
             previous_position = self.file_pos
             time.sleep(self.sleep_time)
 
-            with open(self.interrupt_logfile, 'r') as f:
-                f.seek(self.file_pos)
-                lines = f.readlines()
+            with open(self.interrupt_logfile, 'r') as logfile:
+                logfile.seek(self.file_pos)
+                lines = logfile.readlines()
                 interrupt = self.search_interrupt(int_num, int_regs, lines)
                 if interrupt:
                     return self.Status.OK
-                self.file_pos = f.tell()
+                self.file_pos = logfile.tell()
 
-            if (self.file_pos == previous_position):
+            if self.file_pos == previous_position:
                 if iterations_file_unchanged > 10:
                     self.logger.error('Interrupts stopped... Panic?')
                     return self.Status.STOPPED
@@ -232,9 +236,9 @@ class InterruptWatchdog:
     def match_registers(search_regs: dict[str, int],
                         int_regs: dict[str, int]) -> bool:
         for reg, val in int_regs.items():
-            if reg not in int_regs.keys():
+            if reg not in search_regs.keys():
                 continue
-            if int_regs[reg] != val:
+            if search_regs[reg] != val:
                 return False
         return True
 

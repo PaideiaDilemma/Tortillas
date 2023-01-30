@@ -8,17 +8,49 @@ import threading
 import subprocess
 
 from utils import get_logger
-from constants import TestStatus, QEMU_VMSTATE_TAG
+from constants import TestStatus, TEST_FOLDER_PATH, QEMU_VMSTATE_TAG
 from tortillas_config import TortillasConfig
-from test import Test, TestResult
+from test_specification import TestSpec
+from test_result import TestResult
 from log_parser import LogParser
 from progress_bar import ProgressBar
 from qemu_interface import QemuInterface, InterruptWatchdog
 
 
+class Test:
+    def __init__(self, name: str, num: int, src_folder: str,
+                 config: TortillasConfig):
+        self.name = name
+        self.run_number = num
+
+        self.logger = get_logger(repr(self), prefix=True)
+
+        self.test_file = rf'{src_folder}/{TEST_FOLDER_PATH}/{self.name}.c'
+        self.spec = TestSpec(self.name, self.test_file)
+
+        self.result = TestResult(repr(self), self.spec, config)
+
+        tmp_dir_name = repr(self).lower().replace(' ', '-')
+        self.tmp_dir = rf'{config.test_run_directory}/{tmp_dir_name}'
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Test):
+            return self.name == other.name
+        return NotImplemented
+
+    def __repr__(self):
+        ret = self.name
+        if self.run_number:
+            ret += f' Run {self.run_number}'
+        return ret
+
+    def get_tmp_dir(self) -> str:
+        return self.tmp_dir
+
+
 def run_tests(tests: list[Test], architecture: str, progress_bar: ProgressBar,
               config: TortillasConfig):
-    test_queue = [test for test in tests]
+    test_queue = list(tests[::-1])
     running_tests: dict[str, threading.Thread] = {}
 
     progress_bar.create_run_tests_counters(len(tests))
@@ -34,7 +66,9 @@ def run_tests(tests: list[Test], architecture: str, progress_bar: ProgressBar,
                     panic = ''.join(test.result.errors)
                     test_logger.info(f'Restarting test, because of {panic}')
 
-                test.result = TestResult(test.name)
+                test.result = TestResult(repr(test), test.spec,
+                                         tortillas_config)
+
                 progress_bar.update_counter(
                         progress_bar.Counter.RUNNING, incr=-1)
                 test_queue.append(test)
@@ -42,7 +76,7 @@ def run_tests(tests: list[Test], architecture: str, progress_bar: ProgressBar,
                 return
 
             counter_type = progress_bar.Counter.FAIL
-            if (test.result.status == TestStatus.SUCCESS):
+            if test.result.status == TestStatus.SUCCESS:
                 counter_type = progress_bar.Counter.SUCCESS
 
             progress_bar.update_counter(counter_type,
@@ -85,7 +119,7 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
 
     log.info('Booting SWEB')
     return_reg = 'RAX'
-    if (architecture == 'x86_32'):
+    if architecture == 'x86_32':
         return_reg = 'EAX'
 
     tmp_dir = f'{config.test_run_directory}/snapshot'
@@ -121,8 +155,8 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
                 timeout=config.bootup_timeout_secs
                 )
 
-        if (res == InterruptWatchdog.Status.TIMEOUT or
-           res == InterruptWatchdog.Status.STOPPED):
+        if res in (InterruptWatchdog.Status.TIMEOUT,
+                   InterruptWatchdog.Status.STOPPED):
             log.info('Boot attempt failed, dumping logfile!')
             bootup_error = True
 
@@ -141,19 +175,12 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
                    check=True)
 
 
-def _clean_tmp_dir(tmp_dir):
-    if pathlib.Path(tmp_dir).is_dir():
-        subprocess.run(f'rm {tmp_dir}/*', shell=True)
-    else:
-        subprocess.run(['mkdir', tmp_dir], check=True)
-
-
 def _run(test: Test, architecture: str, config: TortillasConfig,
          callback: Callable[['Test'], None] | None = None):
     log = test.logger
 
     return_reg = 'RAX'
-    if (architecture == 'x86_32'):
+    if architecture == 'x86_32':
         return_reg = 'EAX'
 
     tmp_dir = test.get_tmp_dir()
@@ -187,8 +214,8 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
 
         timeout = config.default_test_timeout_secs
         # Overwrite timeout if in test config
-        if test.config.timeout:
-            timeout = test.config.timeout
+        if test.spec.timeout:
+            timeout = test.spec.timeout
 
         # Wait for the interrupt, that signals program completion
         res = qemu.interrupt_watchdog.wait_until(
@@ -200,7 +227,7 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
                 )
 
         if (res == InterruptWatchdog.Status.TIMEOUT
-           and not test.config.expect_timeout):
+           and not test.spec.expect_timeout):
             test.result.add_execution_error('Test execution timeout')
 
         if res == InterruptWatchdog.Status.STOPPED:
@@ -210,7 +237,7 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
         # Wait a bit for cleanup and debug output to be flushed
         time.sleep(1)
 
-    parser = LogParser(test, config)
+    parser = LogParser(f'{test.tmp_dir}/out.log', log, config)
     parser.parse()
 
     test.result.analyze(parser.log_data)
@@ -218,3 +245,10 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
     log.info('Done!')
     if callback:
         callback(test)
+
+
+def _clean_tmp_dir(tmp_dir):
+    if pathlib.Path(tmp_dir).is_dir():
+        subprocess.run(f'rm {tmp_dir}/*', shell=True)
+    else:
+        subprocess.run(['mkdir', tmp_dir], check=True)

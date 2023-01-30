@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 import sys
-import yaml
 import dataclasses
+import yaml
 
 from utils import get_logger
 
 
-class NoTestConfigFound(Exception):
+class NoTestSpecFound(Exception):
     pass
 
 
 @dataclasses.dataclass
-class TestConfig():
+class TestSpec():
     category: str
     description: str
 
@@ -43,14 +43,15 @@ class TestConfig():
             else:
                 setattr(self, field.name, config[field.name])
 
-    def get_yaml_config_header(self, test_src_path) -> dict:
+    def get_yaml_config_header(self, test_src_path: str) -> dict:
         test_config_raw = ''
         out: dict = {}
-        with open(test_src_path, 'r') as f:
-            lines = f.readlines()
-            if ('/*' not in lines[0]
-                    or '#Tortillas test config' not in lines[1]):
-                raise NoTestConfigFound
+        with open(test_src_path, 'r') as test_src_file:
+            lines = test_src_file.readlines()
+            if ('/*' not in lines[0] or
+                    ('test spec' not in lines[1].lower() and
+                     'test config' not in lines[1].lower())):
+                raise NoTestSpecFound
 
             for line in lines[1:]:
                 if '*/' in line:
