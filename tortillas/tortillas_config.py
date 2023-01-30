@@ -20,11 +20,14 @@ class TortillasConfig:
     sc_tortillas_bootup: int
     sc_tortillas_finished: int
 
+    build_directory: str = r'/tmp/sweb'
+    test_run_directory: str = r'/tmp/sweb/tortillas'
+
     parse: list[ParseConfigEntry] = dataclasses.field(default_factory=list)
     analyze: list[AnalyzeConfigEntry] = dataclasses.field(default_factory=list)
 
     def __init__(self):
-        self.logger = get_logger('Tortillas config (config.yml)', prefix=True)
+        self.logger = get_logger('Tortillas yaml config', prefix=True)
         with open(TORTILLAS_CONFIG_PATH, 'r') as f:
             config_raw = f.read()
 

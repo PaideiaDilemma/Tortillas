@@ -9,7 +9,7 @@ import pathlib
 import threading
 
 from utils import get_logger
-from constants import TestStatus, TEST_FOLDER_PATH, TEST_RUN_DIR
+from constants import TestStatus, TEST_FOLDER_PATH, QEMU_VMSTATE_TAG
 from test_runner import create_snapshot, run_tests
 from tortillas_config import TortillasConfig
 from progress_bar import ProgressBar
@@ -33,7 +33,7 @@ def get_tests_to_run(tortillas_config: TortillasConfig, sweb_src_folder: str,
                      tag: list[str], **kwargs) -> tuple[list[Test], list[str]]:
     # Register all tests
     file_paths = list(pathlib.Path(
-        TEST_FOLDER_PATH).glob(f'{test_glob}*.c'))
+        f'{sweb_src_folder}/{TEST_FOLDER_PATH}').glob(f'{test_glob}*.c'))
 
     tests: list[Test] = []
     for file_path in file_paths:
@@ -184,11 +184,12 @@ def main():
     # Build
     if not args.skip_arch and not args.skip:
         progress_bar.update_main_status('Setting up SWEB build')
-        os.system('./setup_cmake.sh')
-        os.chdir('/tmp/sweb')
+        # This command is equivalent to setup_cmake.sh
+        os.system(f'cmake -B\"{config.build_directory}\" -H.')
+        os.chdir(config.build_directory)
         os.system('echo yes | make {}'.format(args.arch))
     else:
-        os.chdir('/tmp/sweb')
+        os.chdir(config.build_directory)
 
     if not args.skip:
         progress_bar.update_main_status('Building SWEB')
@@ -196,11 +197,11 @@ def main():
             return -1
         log.info('')
 
-    if not os.path.exists(TEST_RUN_DIR):
-        os.mkdir(TEST_RUN_DIR)
+    if not os.path.exists(config.test_run_directory):
+        os.mkdir(config.test_run_directory)
 
     progress_bar.update_main_status('Creating snapshot')
-    create_snapshot(args.arch, TEST_RUN_DIR, config)
+    create_snapshot(args.arch, QEMU_VMSTATE_TAG, config)
 
     progress_bar.update_main_status('Running tests')
     run_tests(tests, args.arch, progress_bar, config)

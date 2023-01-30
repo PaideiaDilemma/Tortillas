@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from utils import get_logger
-from constants import TestStatus, TEST_FOLDER_PATH, TEST_RUN_DIR
+from constants import TestStatus, TEST_FOLDER_PATH
 from tortillas_config import TortillasConfig
 from test_config import TestConfig
 
@@ -15,11 +15,12 @@ class Test:
         self.test_file = rf'{src_folder}/{TEST_FOLDER_PATH}/{self.name}.c'
         self.config = TestConfig(self.name, self.test_file)
 
-        self.pra_selector_programm = pra_selector_programm
-
         self.logger = get_logger(repr(self), prefix=True)
 
         self.result = TestResult(self, config)
+
+        repr_lower = repr(self).lower().replace(' ', '-')
+        self.tmp_dir = rf'{config.test_run_directory}/{repr_lower}'
 
     def __eq__(self, other) -> bool:
         if isinstance(other, Test):
@@ -30,16 +31,10 @@ class Test:
         repr = self.name
         if self.run_number > 1:
             repr += f'Run {self.run_number}'
-        if self.pra_selector_programm:
-            repr += f' {self.pra_selector_programm}'
         return repr
 
-    def set_pra_selector_programm(self, pra_selector: str):
-        self.pra_selector_programm = pra_selector
-        self.logger = get_logger(repr(self), prefix=True)
-
     def get_tmp_dir(self) -> str:
-        return rf"{TEST_RUN_DIR}/{repr(self).lower().replace(' ', '-')}"
+        return self.tmp_dir
 
 
 class TestResult:

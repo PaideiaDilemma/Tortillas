@@ -7,9 +7,6 @@ default_test_timeout_secs: 120
 sc_tortillas_bootup: 69420
 sc_tortillas_finished: 42069
 
-parser_stdout_log_type: 'SYSCALL'
-parser_stdout_match: 'Syscall::write:(.*)'
-
 parse:
 
   - name: kernel_panics
@@ -57,4 +54,3 @@ analyze:
   - name: expect_stdout
     mode: expect_stdout
     status: FAILED
-

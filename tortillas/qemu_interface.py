@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 import time
 import shlex
 import logging
@@ -88,7 +89,7 @@ class QemuInterface():
             log = get_logger('global')
             log.error(
                 f'Architecture {self.arch} not yet supported in tortillas')
-            exit(-1)
+            sys.exit(-1)
 
         if self.vmstate:
             cmd += f' -loadvm {self.vmstate}'

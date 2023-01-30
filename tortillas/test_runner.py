@@ -1,13 +1,14 @@
 from __future__ import annotations
 from typing import Callable, TextIO
 
-import subprocess
+import sys
 import time
-import threading
 import pathlib
+import threading
+import subprocess
 
 from utils import get_logger
-from constants import TestStatus, TEST_RUN_DIR, SWEB_BUILD_DIR
+from constants import TestStatus, QEMU_VMSTATE_TAG
 from tortillas_config import TortillasConfig
 from test import Test, TestResult
 from log_parser import LogParser
@@ -87,14 +88,14 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
     if (architecture == 'x86_32'):
         return_reg = 'EAX'
 
-    tmp_dir = f'{TEST_RUN_DIR}/snapshot'
+    tmp_dir = f'{config.test_run_directory}/snapshot'
     _clean_tmp_dir(tmp_dir)
 
     snapshot_qcow2_path = f'{tmp_dir}/SWEB.qcow2'
 
     subprocess.run(['qemu-img', 'create', '-f', 'qcow2', '-F', 'qcow2', '-b',
-                    f'{SWEB_BUILD_DIR}/SWEB.qcow2',
-                    f'{tmp_dir}/SWEB.qcow2'],
+                    f'{config.build_directory}/SWEB.qcow2',
+                    snapshot_qcow2_path],
                    check=True,
                    stdout=subprocess.DEVNULL)
 
@@ -107,7 +108,7 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
             ) as qemu:
 
         if not qemu.is_alive():
-            exit(-1)
+            sys.exit(-1)
 
         log.debug('Waiting for bootup...')
 
@@ -133,10 +134,11 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
     if bootup_error:
         with open(f'{tmp_dir}/out.log', 'r') as log_file:
             log.info(log_file.read())
-        exit(-1)
+        sys.exit(-1)
 
     subprocess.run(['cp', snapshot_qcow2_path,
-                    f'{TEST_RUN_DIR}/SWEB-snapshot.qcow2'], check=True)
+                    f'{config.test_run_directory}/SWEB-snapshot.qcow2'],
+                   check=True)
 
 
 def _clean_tmp_dir(tmp_dir):
@@ -157,21 +159,21 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
     tmp_dir = test.get_tmp_dir()
     _clean_tmp_dir(tmp_dir)
 
-    log.debug(f'Copying SWEB.qcow2 to {tmp_dir}')
+    log.debug(f'Copying SWEB-snapshot.qcow2 to {tmp_dir}')
 
     snapshot_path = f'{tmp_dir}/SWEB-snapshot.qcow2'
-    subprocess.run(['cp', f'{TEST_RUN_DIR}/SWEB-snapshot.qcow2',
+    subprocess.run(['cp', f'{config.test_run_directory}/SWEB-snapshot.qcow2',
                     snapshot_path], check=True)
 
     log.debug(
-        f'Starting qemu snapshot {TEST_RUN_DIR} (arch={architecture})')
+        f'Starting qemu snapshot {QEMU_VMSTATE_TAG} (arch={architecture})')
 
     with QemuInterface(
             tmp_dir=tmp_dir,
             qcow2_path=snapshot_path,
             arch=architecture,
             logger=log,
-            vmstate=TEST_RUN_DIR
+            vmstate=QEMU_VMSTATE_TAG
             ) as qemu:
 
         if not qemu.is_alive():
