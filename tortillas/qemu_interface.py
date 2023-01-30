@@ -5,6 +5,7 @@ import time
 import shlex
 import logging
 import subprocess
+from enum import Enum
 
 from utils import get_logger
 
@@ -47,12 +48,14 @@ class QemuInterface():
 
         return self
 
-    def __exit__(self, exc_type, exc_val, bt):
+    def __exit__(self, exc_type, exc_value, traceback):
+
         if self.interrupts:
             self.interrupt_watchdog.stop()
 
-        self.logger.debug('Quitting')
-        self.monitor_command('quit\n')
+        if self.is_alive():
+            self.logger.debug('Quitting')
+            self.monitor_command('quit\n')
 
         self.input.close()
 
@@ -63,20 +66,22 @@ class QemuInterface():
 
         if exc_type is not None:
             self.logger.error('Error while running tests',
-                              exc_info=(exc_type, exc_val, bt))
-            exit(-1)
+                              exc_info=(exc_type, exc_value, traceback))
+            return (exc_type, exc_value, traceback)
 
     def _popen_qemu(self) -> subprocess.Popen:
         if self.arch == 'x86_64':
             cmd = (f'qemu-system-x86_64 -m 8M -cpu qemu64 '
                    f'-drive file={self.qcow2_path},index=0,media=disk '
-                   f'-debugcon file:{self.log_file} -monitor pipe:{self.fifos} '
+                   f'-debugcon file:{self.log_file} '
+                   f'-monitor pipe:{self.fifos} '
                    '-nographic -display none -serial /dev/null')
 
         elif self.arch == 'x86_32':
             cmd = (f'qemu-system-i386 -m 8M -cpu qemu32 '
                    f'-drive file={self.qcow2_path},index=0,media=disk '
-                   f'-debugcon file:{self.log_file} -monitor pipe:{self.fifos} '
+                   f'-debugcon file:{self.log_file} '
+                   f'-monitor pipe:{self.fifos} '
                    '-nographic -display none -serial /dev/null')
 
         else:
@@ -131,6 +136,11 @@ class QemuInterface():
 
 
 class InterruptWatchdog:
+    class Status(Enum):
+        OK = 1
+        TIMEOUT = 2
+        STOPPED = 3
+
     def __init__(self, tmp_dir: str, qemu_interface: QemuInterface):
         self.interrupt_logfile = f'{tmp_dir}/int.log'
         self.logger = qemu_interface.logger
@@ -154,7 +164,7 @@ class InterruptWatchdog:
         open(self.interrupt_logfile, 'w').close()  # touch int.log
 
     def wait_until(self, int_num: str, int_regs: dict[str, int],
-                   timeout: int) -> dict[str, int]:
+                   timeout: int) -> Status:
         '''
         This function parses the ouput of the qemu monitor "log int" command.
         It parses the registers of an interrupt into a dict, where the key is
@@ -181,17 +191,18 @@ class InterruptWatchdog:
             previous_position = self.file_pos
             time.sleep(self.sleep_time)
 
-            with open(f'{self.interrupt_logfile}', 'r') as f:
+            with open(self.interrupt_logfile, 'r') as f:
                 f.seek(self.file_pos)
                 lines = f.readlines()
-                interrupt = self.find_interrupt(int_num, int_regs, lines)
+                interrupt = self.search_interrupt(int_num, int_regs, lines)
                 if interrupt:
-                    return self.parse_interrupt(interrupt)
+                    return self.Status.OK
                 self.file_pos = f.tell()
 
             if (self.file_pos == previous_position):
                 if iterations_file_unchanged > 10:
-                    return {'stopped': True}
+                    self.logger.error('Interrupts stopped... Panic?')
+                    return self.Status.STOPPED
 
                 iterations_file_unchanged += 1
             else:
@@ -199,9 +210,10 @@ class InterruptWatchdog:
 
         self.logger.error(f'Timeout! {int_num}: {int_regs}')
 
-        return {'timeout': True}
+        return self.Status.TIMEOUT
 
-    def parse_interrupt(self, interrupt: str) -> dict[str, int]:
+    @staticmethod
+    def parse_interrupt(interrupt: str) -> dict[str, int]:
         regs = {}
         for register in interrupt.split(' '):
             if not register or '=' not in register or register[-1] == '=':
@@ -215,18 +227,19 @@ class InterruptWatchdog:
                 continue
         return regs
 
-    def match_registers(self, int_regs: dict[str, int],
-                        interrupt: str) -> bool:
-        parsed_interrupt_regs = self.parse_interrupt(interrupt)
+    @staticmethod
+    def match_registers(search_regs: dict[str, int],
+                        int_regs: dict[str, int]) -> bool:
         for reg, val in int_regs.items():
-            if reg not in parsed_interrupt_regs:
+            if reg not in int_regs.keys():
                 continue
-            if parsed_interrupt_regs[reg] != val:
+            if int_regs[reg] != val:
                 return False
         return True
 
-    def find_interrupt(self, int_num: int, int_regs: dict[str, int],
-                       lines: list[str]) -> str:
+    @staticmethod
+    def search_interrupt(int_num: int, search_regs: dict[str, int],
+                         lines: list[str]) -> dict[str, int] | None:
         for idx in range(len(lines)):
             if f'v={int_num}' not in lines[idx]:
                 continue
@@ -241,8 +254,9 @@ class InterruptWatchdog:
                     break
 
             interrupt = ''.join((line.strip('\n') + ' '
-                                 for line in lines[idx+1:idx+block_size]))
+                                 for line in lines[idx + 1: idx + block_size]))
 
-            if self.match_registers(int_regs, interrupt):
-                return interrupt
-        return ''
+            registers = InterruptWatchdog.parse_interrupt(interrupt)
+            if InterruptWatchdog.match_registers(search_regs, registers):
+                return registers
+        return None

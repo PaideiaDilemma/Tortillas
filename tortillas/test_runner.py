@@ -12,7 +12,7 @@ from tortillas_config import TortillasConfig
 from test import Test, TestResult
 from log_parser import LogParser
 from progress_bar import ProgressBar
-from qemu_interface import QemuInterface
+from qemu_interface import QemuInterface, InterruptWatchdog
 
 
 def run_tests(tests: list[Test], architecture: str, progress_bar: ProgressBar,
@@ -98,6 +98,7 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
                    check=True,
                    stdout=subprocess.DEVNULL)
 
+    bootup_error = False
     with QemuInterface(
             tmp_dir=tmp_dir,
             qcow2_path=snapshot_qcow2_path,
@@ -119,15 +120,20 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
                 timeout=config.bootup_timeout_secs
                 )
 
-        if 'timeout' in res:
-            log.error('Bootup timeout!')
-            exit(-1)
+        if (res == InterruptWatchdog.Status.TIMEOUT or
+           res == InterruptWatchdog.Status.STOPPED):
+            log.info('Boot attempt failed, dumping logfile!')
+            bootup_error = True
 
-        log.info('Successful bootup!')
+        else:
+            log.info('Successful bootup!')
+            time.sleep(0.1)
+            qemu.monitor_command(f'savevm {label}\n')
 
-        time.sleep(0.1)
-
-        qemu.monitor_command(f'savevm {label}\n')
+    if bootup_error:
+        with open(f'{tmp_dir}/out.log', 'r') as log_file:
+            log.info(log_file.read())
+        exit(-1)
 
     subprocess.run(['cp', snapshot_qcow2_path,
                     f'{TEST_RUN_DIR}/SWEB-snapshot.qcow2'], check=True)
@@ -194,12 +200,11 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
                 timeout=timeout
                 )
 
-        if 'timeout' in res and not test.config.expect_timeout:
-            log.info('Test execution timeout')
+        if (res == InterruptWatchdog.Status.TIMEOUT
+           and not test.config.expect_timeout):
             test.result.add_execution_error('Test execution timeout')
 
-        if 'stopped' in res:
-            log.info('Interrupts stopped... Panic?')
+        if res == InterruptWatchdog.Status.STOPPED:
             test.result.add_execution_error('Test killed, because no more '
                                             'interrupts were comming')
 
