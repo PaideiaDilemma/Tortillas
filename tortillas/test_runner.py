@@ -8,7 +8,6 @@ import pathlib
 
 from utils import get_logger
 from constants import TestStatus, TEST_RUN_DIR, SWEB_BUILD_DIR
-from interrupt_watchdog import InterruptWatchdog
 from tortillas_config import TortillasConfig
 from test import Test, TestResult
 from log_parser import LogParser
@@ -80,13 +79,6 @@ def run_tests(tests: list[Test], architecture: str, progress_bar: ProgressBar,
     # Testing finished
 
 
-def _clean_tmp_dir(tmp_dir):
-    if pathlib.Path(tmp_dir).is_dir():
-        subprocess.run(f'rm {tmp_dir}/*', shell=True)
-    else:
-        subprocess.run(['mkdir', tmp_dir], check=True)
-
-
 def create_snapshot(architecture: str, label: str, config: TortillasConfig):
     log = get_logger('Create snapshot', prefix=True)
 
@@ -116,18 +108,16 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
         if not qemu.is_alive():
             exit(-1)
 
-        interrupt_watchdog = InterruptWatchdog(tmp_dir, qemu, log)
-        interrupt_watchdog.start()
-
         log.debug('Waiting for bootup...')
 
         # Wait for the interrupt, that singals bootup completion
-        res = interrupt_watchdog.wait_until(int_num='80',
-                                            int_regs={
-                                                return_reg:
-                                                    config.sc_tortillas_bootup
-                                            },
-                                            timeout=config.bootup_timeout_secs)
+        res = qemu.interrupt_watchdog.wait_until(
+                int_num='80',
+                int_regs={
+                    return_reg: config.sc_tortillas_bootup
+                },
+                timeout=config.bootup_timeout_secs
+                )
 
         if 'timeout' in res:
             log.error('Bootup timeout!')
@@ -135,15 +125,19 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
 
         log.info('Successful bootup!')
 
-        interrupt_watchdog.stop()
-
         time.sleep(0.1)
 
         qemu.monitor_command(f'savevm {label}\n')
-        qemu.monitor_command('quit\n')
 
     subprocess.run(['cp', snapshot_qcow2_path,
                     f'{TEST_RUN_DIR}/SWEB-snapshot.qcow2'], check=True)
+
+
+def _clean_tmp_dir(tmp_dir):
+    if pathlib.Path(tmp_dir).is_dir():
+        subprocess.run(f'rm {tmp_dir}/*', shell=True)
+    else:
+        subprocess.run(['mkdir', tmp_dir], check=True)
 
 
 def _run(test: Test, architecture: str, config: TortillasConfig,
@@ -180,9 +174,6 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
                 callback(test)
             return
 
-        interrupt_watchdog = InterruptWatchdog(tmp_dir, qemu, test.logger)
-        interrupt_watchdog.start()
-
         # run_pra_test_selector(qemu_input,
         #                     interrupt_watchdog, return_reg)
 
@@ -195,12 +186,13 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
             timeout = test.config.timeout
 
         # Wait for the interrupt, that signals program completion
-        res = interrupt_watchdog.wait_until(int_num='80',
-                                            int_regs={
-                                                return_reg:
-                                                    config.sc_tortillas_finished
-                                            },
-                                            timeout=timeout)
+        res = qemu.interrupt_watchdog.wait_until(
+                int_num='80',
+                int_regs={
+                    return_reg: config.sc_tortillas_finished
+                },
+                timeout=timeout
+                )
 
         if 'timeout' in res and not test.config.expect_timeout:
             log.info('Test execution timeout')
@@ -211,13 +203,8 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
             test.result.add_execution_error('Test killed, because no more '
                                             'interrupts were comming')
 
-        interrupt_watchdog.stop()
-
         # Wait a bit for cleanup and debug output to be flushed
         time.sleep(1)
-
-        log.debug('Quitting')
-        qemu.monitor_command('quit\n')
 
     parser = LogParser(test, config)
     parser.parse()

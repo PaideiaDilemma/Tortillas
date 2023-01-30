@@ -97,14 +97,14 @@ class TestResult:
 
         if missing_output:
             full_stdout = ''.join(line for line in stdout)
-            self.errors.append(f'Actual output: {full_stdout}')
+            self.errors.append(f'Actual output:\n{full_stdout}')
             self.set_status(status)
 
     def analyze_exit_codes(self, exit_codes: list[str],
                            status: TestStatus | None = None):
         if not exit_codes:
             self.errors.append('Missing exit code!')
-            if self.TestStatus == TestStatus.SUCCESS:
+            if self.status == TestStatus.SUCCESS:
                 self.status = TestStatus.FAILED
                 return
 

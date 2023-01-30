@@ -109,11 +109,15 @@ def get_markdown_test_summary(tests: list[Test],
                 if line[-1] not in ['\n', '\r']:
                     line = f'{line}\n'
 
+                if line[-2:] == '\n\n':
+                    line = line[:-1]
+
                 if '=== Begin of backtrace' in line:
                     summary += f'```\n{line}```'
                     continue
 
                 summary += f'- {line}'
+            summary += '\n'
 
     with open('tortillas_summary.md', 'w') as f:
         f.write(summary)
