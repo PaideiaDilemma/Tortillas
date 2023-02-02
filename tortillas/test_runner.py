@@ -8,7 +8,7 @@ import threading
 import subprocess
 
 from utils import get_logger
-from constants import TestStatus, TEST_FOLDER_PATH, QEMU_VMSTATE_TAG
+from constants import TestStatus, TEST_FOLDER_PATH, SWEB_BUILD_DIR, TEST_RUN_DIR, QEMU_VMSTATE_TAG
 from tortillas_config import TortillasConfig
 from test_specification import TestSpec
 from test_result import TestResult
@@ -17,24 +17,21 @@ from progress_bar import ProgressBar
 from qemu_interface import QemuInterface, InterruptWatchdog
 
 
-class Test:
-    def __init__(self, name: str, num: int, src_folder: str,
-                 config: TortillasConfig):
-        self.name = name
+class TestRun:
+    def __init__(self, test_spec: TestSpec, num: int, config: TortillasConfig):
+        self.name = test_spec.test_name
         self.run_number = num
+        self.spec = test_spec
 
         self.logger = get_logger(repr(self), prefix=True)
-
-        self.test_file = rf'{src_folder}/{TEST_FOLDER_PATH}/{self.name}.c'
-        self.spec = TestSpec(self.name, self.test_file)
 
         self.result = TestResult(repr(self), self.spec, config)
 
         tmp_dir_name = repr(self).lower().replace(' ', '-')
-        self.tmp_dir = rf'{config.test_run_directory}/{tmp_dir_name}'
+        self.tmp_dir = rf'{TEST_RUN_DIR}/{tmp_dir_name}'
 
     def __eq__(self, other) -> bool:
-        if isinstance(other, Test):
+        if isinstance(other, TestRun):
             return self.name == other.name
         return NotImplemented
 
@@ -48,7 +45,27 @@ class Test:
         return self.tmp_dir
 
 
-def run_tests(tests: list[Test], architecture: str, progress_bar: ProgressBar,
+def get_tests_from_specs(specs: list[TestSpec], repeat: int,
+                         config: TortillasConfig) -> list[TestRun]:
+    '''
+    Create `repeat` number of test objects for each spec in `specs`.
+    '''
+
+    tests = []
+    for spec in specs:
+        if spec.disabled:
+            continue
+
+        for num in range(repeat):
+            tests.append(TestRun(spec, num, config))
+
+    if repeat > 1:
+        tests.sort(key=(lambda test: test.run_number))
+
+    return tests
+
+
+def run_tests(tests: list[TestRun], architecture: str, progress_bar: ProgressBar,
               config: TortillasConfig):
     test_queue = list(tests[::-1])
     running_tests: dict[str, threading.Thread] = {}
@@ -56,7 +73,7 @@ def run_tests(tests: list[Test], architecture: str, progress_bar: ProgressBar,
     progress_bar.create_run_tests_counters(len(tests))
     lock = threading.Lock()
 
-    def thread_callback(test: Test):
+    def thread_callback(test: TestRun):
         with lock:
             running_tests.pop(repr(test))
 
@@ -66,8 +83,7 @@ def run_tests(tests: list[Test], architecture: str, progress_bar: ProgressBar,
                     panic = ''.join(test.result.errors)
                     test_logger.info(f'Restarting test, because of {panic}')
 
-                test.result = TestResult(repr(test), test.spec,
-                                         tortillas_config)
+                test.result = TestResult(repr(test), test.spec, config)
 
                 progress_bar.update_counter(
                         progress_bar.Counter.RUNNING, incr=-1)
@@ -82,7 +98,7 @@ def run_tests(tests: list[Test], architecture: str, progress_bar: ProgressBar,
             progress_bar.update_counter(counter_type,
                                         progress_bar.Counter.RUNNING)
 
-    def run_test(test_queue: list[Test]):
+    def run_test(test_queue: list[TestRun]):
         with lock:
             test = test_queue.pop()
             progress_bar.update_counter(progress_bar.Counter.RUNNING)
@@ -122,13 +138,13 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
     if architecture == 'x86_32':
         return_reg = 'EAX'
 
-    tmp_dir = f'{config.test_run_directory}/snapshot'
+    tmp_dir = f'{TEST_RUN_DIR}/snapshot'
     _clean_tmp_dir(tmp_dir)
 
     snapshot_qcow2_path = f'{tmp_dir}/SWEB.qcow2'
 
     subprocess.run(['qemu-img', 'create', '-f', 'qcow2', '-F', 'qcow2', '-b',
-                    f'{config.build_directory}/SWEB.qcow2',
+                    f'{SWEB_BUILD_DIR}/SWEB.qcow2',
                     snapshot_qcow2_path],
                    check=True,
                    stdout=subprocess.DEVNULL)
@@ -171,12 +187,82 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
         sys.exit(-1)
 
     subprocess.run(['cp', snapshot_qcow2_path,
-                    f'{config.test_run_directory}/SWEB-snapshot.qcow2'],
+                    f'{TEST_RUN_DIR}/SWEB-snapshot.qcow2'],
                    check=True)
 
 
-def _run(test: Test, architecture: str, config: TortillasConfig,
-         callback: Callable[['Test'], None] | None = None):
+def get_markdown_test_summary(tests: list[TestRun],
+                              disabled_specs: list[TestSpec],
+                              success: bool) -> str:
+    '''
+    Get a simple summary of all test runs.
+    The summary contains table of tests with their run status and
+    a summary of all errors that occured.
+    '''
+
+    def markdown_table_row(cols: list[str],
+                           widths: list[int] = [40, 20]) -> str:
+        assert (len(widths) == len(cols))
+        res = '|'
+        for cell, width in zip(cols, widths):
+            padding = width - len(cell) - 2
+            if padding < 0:
+                raise ValueError(f'\"{cell}\" is to long '
+                                 'for the table width')
+            res += f" {cell}{' '*padding}|"
+        return res + '\n'
+
+    def markdown_table_delim(widths: list[int] = [40, 20]):
+        res = '|'
+        for width in widths:
+            res += f" {'-'*(width-3)} |"
+        return res + '\n'
+
+    tests.sort(key=(lambda test: test.result.status.name))
+
+    summary = ''
+    summary += markdown_table_row(['Test run', 'Result'])
+    summary += markdown_table_delim()
+
+    for spec in disabled_specs:
+        summary += markdown_table_row([spec, TestStatus.DISABLED.name])
+
+    for test in tests:
+        summary += markdown_table_row([repr(test),
+                                      test.result.status.name])
+
+    if not success:
+        failed_tests = (test for test in tests
+                        if test.result.status in
+                        [TestStatus.FAILED, TestStatus.PANIC])
+
+        summary += '\n\n'
+        summary += '## Errors\n\n'
+
+        for spec in failed_tests:
+            summary += f'### {repr(spec)} - {spec.get_tmp_dir()}/out.log\n\n'
+            for error in spec.result.errors:
+                if error[-1] not in ['\n', '\r']:
+                    error = f'{error}\n'
+
+                if error[-2:] == '\n\n':
+                    error = error[:-1]
+
+                if '=== Begin of backtrace' in error:
+                    summary += f'```\n{error}```'
+                    continue
+
+                summary += f'- {error}'
+            summary += '\n'
+
+    with open('tortillas_summary.md', 'w') as summary_file:
+        summary_file.write(summary)
+
+    return summary
+
+
+def _run(test: TestRun, architecture: str, config: TortillasConfig,
+         callback: Callable[['TestRun'], None] | None = None):
     log = test.logger
 
     return_reg = 'RAX'
@@ -189,7 +275,7 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
     log.debug(f'Copying SWEB-snapshot.qcow2 to {tmp_dir}')
 
     snapshot_path = f'{tmp_dir}/SWEB-snapshot.qcow2'
-    subprocess.run(['cp', f'{config.test_run_directory}/SWEB-snapshot.qcow2',
+    subprocess.run(['cp', f'{TEST_RUN_DIR}/SWEB-snapshot.qcow2',
                     snapshot_path], check=True)
 
     log.debug(
@@ -237,7 +323,7 @@ def _run(test: Test, architecture: str, config: TortillasConfig,
         # Wait a bit for cleanup and debug output to be flushed
         time.sleep(1)
 
-    parser = LogParser(f'{test.tmp_dir}/out.log', log, config)
+    parser = LogParser(f'{test.tmp_dir}/out.log', log, config.parse)
     parser.parse()
 
     test.result.analyze(parser.log_data)

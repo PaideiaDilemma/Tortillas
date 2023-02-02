@@ -22,9 +22,6 @@ class TortillasConfig:
     parse: list[ParseConfigEntry] = dataclasses.field(default_factory=list)
     analyze: list[AnalyzeConfigEntry] = dataclasses.field(default_factory=list)
 
-    build_directory: str = r'/tmp/sweb'
-    test_run_directory: str = r'/tmp/sweb/tortillas'
-
     def __init__(self):
         self.logger = get_logger('Tortillas yaml config', prefix=True)
         with open(TORTILLAS_CONFIG_PATH, 'r') as yaml_config_file:

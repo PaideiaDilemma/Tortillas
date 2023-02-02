@@ -1,10 +1,47 @@
 from __future__ import annotations
 
 import sys
+import pathlib
 import dataclasses
 import yaml
 
 from utils import get_logger
+from constants import TEST_FOLDER_PATH
+
+
+def get_test_specs(sweb_src_folder: str, test_glob: str) -> list[TestSpec]:
+    '''
+    Gets all TestsSpecs (yaml test headers), in the test directory.
+    With `test_glob`, one can only select tests with a certain name
+    '''
+    file_paths = list(pathlib.Path(
+        f'{sweb_src_folder}/{TEST_FOLDER_PATH}').glob(f'{test_glob}*.c'))
+
+    specs = []
+    for file_path in file_paths:
+        try:
+            specs.append(TestSpec(file_path.stem, file_path))
+        except NoTestSpecFound:
+            continue
+
+    specs.sort(key=(lambda spec: spec.test_name), reverse=True)
+    return specs
+
+
+def filter_test_specs(specs: list[TestSpec], categories: list[str],
+                      tags: list[str]) -> list[TestSpec]:
+    '''
+    Filter for `specs`, where spec.category is in `categories` and
+    for specs where any tag in spec.tags matches with `tags`.
+    '''
+    if categories:
+        specs = [spec for spec in specs
+                 if spec.category in categories]
+
+    if tags:
+        specs = [spec for spec in specs
+                 if any(tag in spec.tags for tag in tags)]
+    return specs
 
 
 class NoTestSpecFound(Exception):
@@ -26,6 +63,7 @@ class TestSpec():
 
     def __init__(self, test_name: str, test_src_path: str):
         self.test_name = test_name
+        self.test_src_path = test_src_path
         self.logger = get_logger(f'Test config for {test_name}', prefix=True)
 
         config = self.get_yaml_config_header(test_src_path)
