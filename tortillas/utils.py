@@ -1,3 +1,5 @@
+'''This module provides some util functions.'''
+
 from __future__ import annotations
 
 import logging
@@ -7,6 +9,10 @@ from constants import LOG_LEVEL
 
 
 def get_logger(name: str, prefix: bool = False) -> logging.Logger:
+    '''
+    Get a logger for `name`. If `prefix` is `True`, then each log string will
+    be prefixed with `name`.
+    '''
     log = logging.getLogger(name)
     if not log.handlers:
         log.propagate = False
@@ -18,10 +24,9 @@ def get_logger(name: str, prefix: bool = False) -> logging.Logger:
     return log
 
 
-def escape_ansi(line: bytes) -> bytes:
+def escape_ansi(content: bytes) -> bytes:
     '''
-    We need to handle ansi rescape sequesces in the qemu serial output.
-    Otherwise, there is no guarantie to match a specific string.
+    This function strips all ansi escape sequences from `content`.
 
     I took the regex from this post: https://stackoverflow.com/a/14693789
     THis matches 7-bit C1 ANSI sequences but not 8-bit ones!!
@@ -37,4 +42,4 @@ def escape_ansi(line: bytes) -> bytes:
             [@-~]   # Final byte
         )
     ''', re.VERBOSE)
-    return ansi_re.sub(b'', line)
+    return ansi_re.sub(b'', content)

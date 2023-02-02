@@ -1,4 +1,4 @@
-'''Configurable parser for the log output of SWEB'''
+'''This module is used to parse SWEB logs.'''
 
 from __future__ import annotations
 
@@ -10,8 +10,7 @@ from tortillas_config import ParseConfigEntry
 
 
 class LogParser:
-
-    '''Parse SWEB logs'''
+    '''Configurable parser for the log output of SWEB.'''
 
     def __init__(self, log_file_path: str, logger: logging.Logger,
                  config: list[ParseConfigEntry]):

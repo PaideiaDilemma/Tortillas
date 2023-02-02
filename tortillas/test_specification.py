@@ -1,3 +1,5 @@
+'''This module handles the test specification headers of tortillas tests.'''
+
 from __future__ import annotations
 
 import sys
@@ -45,11 +47,30 @@ def filter_test_specs(specs: list[TestSpec], categories: list[str],
 
 
 class NoTestSpecFound(Exception):
-    pass
+    '''Will be raised, if a test file does not contain test spec header.'''
 
 
 @dataclasses.dataclass
 class TestSpec():
+    '''
+    Test specification class.
+
+    A valid test specification header requires the following format:
+
+        - First line must be '/*'
+        - Second line must contain 'test spec' or 'test config'
+        - Must be valid yaml
+        - `category` and `description` are required.
+        - Must end with '*/' in its own line.
+
+    The constructor of this class will automatically open `test_src_path` and
+    parse the yaml header.
+
+    To add a new test specification field, you ONLY have to add a member
+    in this class. If one specifies a default value, the field is optional,
+    otherwise it is required.
+    '''
+
     category: str
     description: str
 
@@ -82,6 +103,7 @@ class TestSpec():
                 setattr(self, field.name, config[field.name])
 
     def _parse_yaml_config_header(self, test_src_path: str) -> dict:
+        ''':raises: NoTestSpecFound: if no valid yaml header is found.'''
         test_config_raw = ''
         out: dict = {}
         with open(test_src_path, 'r') as test_src_file:
@@ -100,5 +122,6 @@ class TestSpec():
                 out = yaml.safe_load(test_config_raw)
             except yaml.YAMLError as exc:
                 self.logger.error(exc)
+                raise NoTestSpecFound
 
             return out

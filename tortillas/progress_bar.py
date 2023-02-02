@@ -1,3 +1,5 @@
+'''This module provides a class to visually keep track of testing progress'''
+
 from __future__ import annotations
 from enum import Enum
 
@@ -5,7 +7,16 @@ from utils import get_logger
 
 
 class ProgressBar:
+    '''
+    A progress bar that keeps track of running, failing and
+    successfully completed tests.
+
+    Relies on the `englighten` module.
+    If it is not present, or `no_progress_bar` is specified,
+    this class will act as a dummy.
+    '''
     class Counter(Enum):
+        '''Counter types, which index the `ProgressBar.counters` dict'''
         RUNNING = 1
         SUCCESS = 2
         FAIL = 3
@@ -36,12 +47,14 @@ class ProgressBar:
         self.progress_manager.stop()
 
     def refresh(self):
+        '''This function will redraw counters and update the elapsed time.'''
         if self.no_bar:
             return
 
         self.status_bar.refresh()
 
     def create_main_status_bar(self):
+        '''Initialize the main status bar'''
         if self.no_bar:
             return
 
@@ -55,12 +68,17 @@ class ProgressBar:
         )
 
     def update_main_status(self, status: str):
+        '''Update the status bar with a new status, specified by `status`'''
         if self.no_bar:
             return
 
         self.status_bar.update(status=status, force=True)
 
     def create_run_tests_counters(self, total: int):
+        '''
+        Initialize counters. `total` should be the number of test runs, that
+        will be executed.
+        '''
         if self.no_bar:
             return
 
@@ -88,6 +106,10 @@ class ProgressBar:
     def update_counter(self, counter: ProgressBar.Counter,
                        from_counter: ProgressBar.Counter | None = None,
                        incr=1):
+        '''
+        Update a counter by `incr`. If `from_counter` is specified,
+        `incr` will additionally be substracted from `from_counter`.
+        '''
         if self.no_bar:
             return
 

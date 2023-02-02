@@ -1,3 +1,5 @@
+'''This module handles tortillas configuration.'''
+
 from __future__ import annotations
 
 import re
@@ -11,6 +13,16 @@ from constants import TORTILLAS_CONFIG_PATH
 
 @dataclasses.dataclass(eq=False)
 class TortillasConfig:
+    '''
+    Tortillas configuration class.
+
+    The Constructor will automatically open and
+    parse the tortillas config file.
+
+    To add an option, add a member to this class.
+    If it has no default value, it will be required, otherwise optional.
+    '''
+
     threads: int
 
     bootup_timeout_secs: int
@@ -55,6 +67,10 @@ class TortillasConfig:
 
 @dataclasses.dataclass
 class ParseConfigEntry:
+    '''
+    Configuration of the log_parser.
+    '''
+
     name: str
     scope: str
     pattern: str
@@ -62,12 +78,17 @@ class ParseConfigEntry:
     pattern_compiled: re.Pattern | None = None
 
     def compile_pattern(self) -> ParseConfigEntry:
+        '''Use `re.compile`, to compile the `self.pattern`.'''
         self.pattern_compiled = re.compile(self.pattern, re.DOTALL)
         return self
 
 
 @dataclasses.dataclass
 class AnalyzeConfigEntry:
+    '''
+    Configuration for analyzing log data.
+    '''
+
     name: str
     mode: str
     status: str = dataclasses.field(default_factory=str)

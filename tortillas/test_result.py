@@ -1,3 +1,5 @@
+'''This modules is used to analyze log data, that was parsed by LogParser.'''
+
 from __future__ import annotations
 
 from utils import get_logger
@@ -7,6 +9,12 @@ from test_specification import TestSpec
 
 
 class TestResult:
+    '''
+    Represent the result of a TestRun.
+    The actuall result is determined by analyzing log data using
+    the config entries in `TortillasConfig.analyze`.
+    '''
+
     def __init__(self, test_repr: str, test_spec: TestSpec,
                  config: TortillasConfig):
         self.logger = get_logger(f'{test_repr} result', prefix=True)
@@ -25,6 +33,7 @@ class TestResult:
             return
 
     def analyze(self, log_data: dict[str, list[str]]):
+        '''Analyze `log_data` using the analyze configuration.'''
         self.status = TestStatus.SUCCESS
 
         for analyze_config_entry in self.config:
@@ -51,7 +60,7 @@ class TestResult:
             if self.status == TestStatus.PANIC:
                 break
 
-    def set_status(self, status: TestStatus | None):
+    def _set_status(self, status: TestStatus | None):
         if not status:
             return
 
@@ -59,22 +68,27 @@ class TestResult:
         self.status = status
 
     def add_execution_error(self, error: str):
+        '''
+        Add an `error` during execution. Used for example, if a timeout occurs.
+        '''
         self.errors.append(error)
         self.status = TestStatus.FAILED
 
     def add_errors(self, log_data_entry: list[str],
                    status: TestStatus | None = None):
+        '''Handle config mode \'ad_as_error\', set `status`, if supplied'''
         if not log_data_entry:
             return
 
         for error in log_data_entry:
             self.errors.append(error)
 
-        self.set_status(status)
+        self._set_status(status)
 
     def check_expect_stdout(self, expect_stdout: list[str],
                             stdout: list[str],
                             status: TestStatus | None = None):
+        '''Handle config mode \'expect_stdout\', set `status`, if supplied'''
         if not expect_stdout:
             return
 
@@ -88,10 +102,11 @@ class TestResult:
         if missing_output:
             full_stdout = ''.join(line for line in stdout)
             self.errors.append(f'Actual output:\n{full_stdout}')
-            self.set_status(status)
+            self._set_status(status)
 
     def check_exit_codes(self, exit_codes: list[str],
                          status: TestStatus | None = None):
+        '''Handle config mode \'exit_codes\', set `status`, if supplied'''
         if not exit_codes:
             self.errors.append('Missing exit code!')
             if self.status == TestStatus.SUCCESS:
@@ -117,4 +132,4 @@ class TestResult:
                                            for e in self.expect_exit_codes)
                 self.errors.append(
                         f'Expected exit code(s): {expected_codes}')
-                self.set_status(status)
+                self._set_status(status)

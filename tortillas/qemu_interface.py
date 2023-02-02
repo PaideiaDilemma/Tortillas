@@ -1,3 +1,8 @@
+'''
+This module provides functionality, to create and communicate with a
+qemu process.
+'''
+
 from __future__ import annotations
 from typing import TextIO
 
@@ -13,6 +18,11 @@ from utils import get_logger
 
 
 class QemuInterface():
+    '''
+    Withable class, that creates a qemu process and named pipes, to communicate
+    with that process.
+    '''
+
     def __init__(self, tmp_dir: str, qcow2_path: str, arch: str,
                  logger: logging.Logger,
                  vmstate: str | None = None,
@@ -104,12 +114,17 @@ class QemuInterface():
                                 stdin=subprocess.DEVNULL)
 
     def is_alive(self) -> bool:
+        '''Return, whether the qemu process is running.'''
         if not self.input or self.process.poll():
             self.logger.error('Qemu_process not alive any more!')
             return False
         return True
 
     def monitor_command(self, data: list[str] | str):
+        '''
+        Send a qemu monitor command.
+        See https://www.qemu.org/docs/master/system/monitor.html
+        '''
         if not isinstance(data, list):
             data = [data]
 
@@ -126,6 +141,7 @@ class QemuInterface():
                 )
 
     def sweb_input(self, string: str):
+        '''Input to sweb via qemu sendkey.'''
         data = []
         keymap = {'\n': 'kp_enter', ' ': 'spc', '.': 'dot',
                   '_': 'shift-minus', '-': 'minus', '/': 'slash'}
@@ -141,7 +157,19 @@ class QemuInterface():
 
 
 class InterruptWatchdog:
+    '''
+    Use qemu interrupt logging, to wait for specfic events and
+    detect kernel panics.
+
+    This class parses the ouput of the qemu monitor "log int" command.
+    One can wait for an interrupt, by passing an interrupt number and
+    a set of registers to the `wait_until` member function.
+
+    Note, that interrupt logs contain some interresting metadata, that one
+    could collect in here.
+    '''
     class Status(Enum):
+        '''Status of the interrupt watchdog.'''
         OK = 1
         TIMEOUT = 2
         STOPPED = 3
@@ -156,37 +184,26 @@ class InterruptWatchdog:
         self.file_pos = 0
 
     def start(self):
+        '''Start logging interrupts.'''
         self.clean()
         self.qemu_interface.monitor_command(
                 f'logfile {self.interrupt_logfile}\n')
         self.qemu_interface.monitor_command('log int\n')
 
+    def clean(self):
+        '''Clear/Touch the interrupt logfile.'''
+        open(self.interrupt_logfile, 'w').close()  # touch int.log
+
     def stop(self):
+        '''Stop logging interrupts and remove the logfile.'''
         self.qemu_interface.monitor_command('log none\n')
         os.remove(self.interrupt_logfile)
-
-    def clean(self):
-        open(self.interrupt_logfile, 'w').close()  # touch int.log
 
     def wait_until(self, int_num: str, int_regs: dict[str, int],
                    timeout: int) -> Status:
         '''
-        This function parses the ouput of the qemu monitor "log int" command.
-        It parses the registers of an interrupt into a dict, where the key is
-        the name of the register and the value is the register state.
-
-        RAX=0000000000000004 RBX=0000000000000001 RCX=00007ffffffffd50...
-             ...
-        CR0=80010013 CR2=0000000008008000 CR3=00000000003f0000 CR4=00000220
-             ...
-        CCS=0000000000000020 CCD=00007ffffffffd20 CCO=SUBQ
-        EFER=0000000000000d00
-
-        The above wil become {'RAX': 0x4, 'RBX': 0x1, ...}.
-        One can then match an interrupt, by passing the interrupt number and
-        a set of registers having the same format to this function.
-        If interrupt_regs is empty it will match the first interrupt with the
-        specified number.
+        Loop until we find an interrupt, that matches int_num and int_regs.
+        If int_regs is empty it will match the first interrupt with int_num.
         '''
         max_iterations = int(timeout / self.sleep_time)
 
@@ -219,6 +236,21 @@ class InterruptWatchdog:
 
     @staticmethod
     def parse_interrupt(interrupt: str) -> dict[str, int]:
+        '''
+        This function parses the registers of an interrupt into a dict,
+        where the key is the name of the register and
+        the value is the register state.
+
+        Example Interrupt:
+        RAX=0000000000000004 RBX=0000000000000001 RCX=00007ffffffffd50...
+             ...
+        CR0=80010013 CR2=0000000008008000 CR3=00000000003f0000 CR4=00000220
+             ...
+        CCS=0000000000000020 CCD=00007ffffffffd20 CCO=SUBQ
+        EFER=0000000000000d00
+
+        The above will become {'RAX': 0x4, 'RBX': 0x1, ...}.
+        '''
         regs = {}
         for register in interrupt.split(' '):
             if not register or '=' not in register or register[-1] == '=':
@@ -235,6 +267,11 @@ class InterruptWatchdog:
     @staticmethod
     def match_registers(search_regs: dict[str, int],
                         int_regs: dict[str, int]) -> bool:
+        '''
+        Check whether all register values in search_regs match with
+        the values in int_regs.
+        Registers, that are not present in search_regs will be ignored.
+        '''
         for reg, val in int_regs.items():
             if reg not in search_regs.keys():
                 continue
@@ -245,8 +282,9 @@ class InterruptWatchdog:
     @staticmethod
     def search_interrupt(int_num: int, search_regs: dict[str, int],
                          lines: list[str]) -> dict[str, int] | None:
-        for idx in range(len(lines)):
-            if f'v={int_num}' not in lines[idx]:
+        '''Search for a specific interrupt in lines.'''
+        for index, line in enumerate(lines):
+            if f'v={int_num}' not in line:
                 continue
 
             # A block is usually 20 lines long.
@@ -254,12 +292,13 @@ class InterruptWatchdog:
             # we search for the next inerrupt in a range from 1-30
             block_size = 0
             for block_size in [21] + list(range(1, 30)):
-                if (idx + block_size + 1 >= len(lines) or
-                        'v=' in lines[idx + block_size]):
+                if (index + block_size + 1 >= len(lines) or
+                        'v=' in lines[index + block_size]):
                     break
 
             interrupt = ''.join((line.strip('\n') + ' '
-                                 for line in lines[idx + 1: idx + block_size]))
+                                 for line in lines[index + 1:
+                                                   index + block_size]))
 
             registers = InterruptWatchdog.parse_interrupt(interrupt)
             if InterruptWatchdog.match_registers(search_regs, registers):

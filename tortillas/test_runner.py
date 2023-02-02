@@ -1,3 +1,5 @@
+'''This modules contains the top level interface for running tests.'''
+
 from __future__ import annotations
 from typing import Callable
 
@@ -19,6 +21,10 @@ from qemu_interface import QemuInterface, InterruptWatchdog
 
 
 class TestRun:
+    '''
+    A wrapper around TestSpec and TestResult, that respresents a test run.
+    '''
+
     def __init__(self, test_spec: TestSpec, num: int, config: TortillasConfig):
         self.name = test_spec.test_name
         self.run_number = num
@@ -43,30 +49,18 @@ class TestRun:
         return ret
 
     def get_tmp_dir(self) -> str:
+        '''Get the temporary directory of the test run'''
         return self.tmp_dir
 
 
-def get_tests_from_specs(specs: list[TestSpec], repeat: int,
-                         config: TortillasConfig) -> list[TestRun]:
-    '''
-    Create `repeat` number of test objects for each spec in `specs`.
-    '''
-
-    tests = []
-    for spec in specs:
-        if spec.disabled:
-            continue
-
-        for num in range(repeat):
-            tests.append(TestRun(spec, num, config))
-
-    if repeat > 1:
-        tests.sort(key=(lambda test: test.run_number))
-
-    return tests
-
-
 class TestRunner:
+    '''
+    Facilitates the creation of a qemu snapshot and
+    the execution of all test runs.
+
+    Also provides a summary of all test runs via `get_markdown_test_summary`.
+    '''
+
     def __init__(self,  specs: list[TestSpec], repeat: int, architecture: str,
                  config: TortillasConfig, progress_bar: ProgressBar):
         self.logger = get_logger('global')
@@ -92,6 +86,7 @@ class TestRunner:
         self.logger.info('')
 
     def start(self):
+        '''Start test execution.'''
         test_queue = list(self.test_runs[::-1])
         running_tests: dict[str, threading.Thread] = {}
 
@@ -100,6 +95,7 @@ class TestRunner:
         counters = self.progress_bar.Counter
 
         def thread_callback(test_run: TestRun):
+            '''Handle test completion and test retrys.'''
             with lock:
                 running_tests.pop(repr(test_run))
 
@@ -127,6 +123,10 @@ class TestRunner:
                                                  counters.RUNNING)
 
         def run_test(test_queue: list[TestRun]):
+            '''
+            Run a single test in a dedicated thread,
+            by poping a test run from `test_queue` and passing it to `_run`.
+            '''
             with lock:
                 test = test_queue.pop()
                 self.progress_bar.update_counter(
@@ -163,6 +163,10 @@ class TestRunner:
                 for test_run in self.test_runs)
 
     def create_snapshot(self):
+        '''
+        Create a Redirect-on-Write snapshot, of the original qcow2 image and
+        use `savevm`, to snapshot the vm state.
+        '''
         _create_snapshot(self.architecture, QEMU_VMSTATE_TAG, self.config)
 
     def get_markdown_test_summary(self) -> str:
@@ -171,7 +175,6 @@ class TestRunner:
         The summary contains table of tests with their run status and
         a summary of all errors that occured.
         '''
-
         def markdown_table_row(cols: list[str],
                                widths: list[int] = [40, 20]) -> str:
             assert (len(widths) == len(cols))
@@ -227,7 +230,8 @@ class TestRunner:
                     summary += f'- {error}'
                 summary += '\n'
 
-        with open('tortillas_summary.md', 'w') as summary_file:
+        with open(f'{SWEB_BUILD_DIR}/tortillas_summary.md',
+                  'w') as summary_file:
             summary_file.write(summary)
 
         return summary
@@ -332,7 +336,7 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
         qemu.sweb_input(f'{test.name}.sweb\n')
 
         timeout = config.default_test_timeout_secs
-        # Overwrite timeout if in test config
+        # Overwrite timeout if the TestSpec contains a timeout
         if test.spec.timeout:
             timeout = test.spec.timeout
 
