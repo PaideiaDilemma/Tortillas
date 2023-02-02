@@ -10,8 +10,8 @@ import threading
 import subprocess
 
 from utils import get_logger
-from constants import (TestStatus,
-                       SWEB_BUILD_DIR, TEST_RUN_DIR, QEMU_VMSTATE_TAG)
+from constants import (SWEB_BUILD_DIR, TEST_RUN_DIR, QEMU_VMSTATE_TAG,
+                       INT_SYSCALL)
 from tortillas_config import TortillasConfig
 from test_specification import TestSpec
 from test_result import TestResult
@@ -116,7 +116,7 @@ class TestRunner:
                     return
 
                 counter = counters.FAIL
-                if test_run.result.status == TestStatus.SUCCESS:
+                if test_run.result.status == TestResult.Status.SUCCESS:
                     counter = counters.SUCCESS
 
                 self.progress_bar.update_counter(counter,
@@ -159,7 +159,8 @@ class TestRunner:
         # Testing finished
 
         self.success = not any(
-                test_run.result.status in (TestStatus.FAILED, TestStatus.PANIC)
+                test_run.result.status in (TestResult.Status.FAILED,
+                                           TestResult.Status.PANIC)
                 for test_run in self.test_runs)
 
     def create_snapshot(self):
@@ -199,22 +200,23 @@ class TestRunner:
         summary += markdown_table_row(['Test run', 'Result'])
         summary += markdown_table_delim()
 
-        for run in self.disabled_specs:
-            summary += markdown_table_row([run, TestStatus.DISABLED.name])
+        for spec in self.disabled_specs:
+            summary += markdown_table_row([spec,
+                                           TestResult.Status.DISABLED.name])
 
-        for test in self.test_runs:
-            summary += markdown_table_row([repr(test),
-                                          test.result.status.name])
+        for run in self.test_runs:
+            summary += markdown_table_row([repr(run),
+                                          run.result.status.name])
 
         if not self.success:
-            failed_test_runs = (test_run for test_run in self.test_runs
-                                if test_run.result.status in
-                                [TestStatus.FAILED, TestStatus.PANIC])
+            failed_runs = (run for run in self.test_runs
+                           if run.result.status in (TestResult.Status.FAILED,
+                                                    TestResult.Status.PANIC))
 
             summary += '\n\n'
             summary += '## Errors\n\n'
 
-            for run in failed_test_runs:
+            for run in failed_runs:
                 summary += f'### {repr(run)} - {run.tmp_dir}/out.log\n\n'
                 for error in run.result.errors:
                     if error[-1] not in ['\n', '\r']:
@@ -271,7 +273,7 @@ def _create_snapshot(architecture: str, label: str, config: TortillasConfig):
 
         # Wait for the interrupt, that singals bootup completion
         res = qemu.interrupt_watchdog.wait_until(
-                int_num='80',
+                int_num=INT_SYSCALL,
                 int_regs={
                     return_reg: config.sc_tortillas_bootup
                 },
@@ -342,7 +344,7 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
 
         # Wait for the interrupt, that signals program completion
         res = qemu.interrupt_watchdog.wait_until(
-                int_num='80',
+                int_num=INT_SYSCALL,
                 int_regs={
                     return_reg: config.sc_tortillas_finished
                 },

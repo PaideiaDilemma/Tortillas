@@ -1,9 +1,9 @@
 '''This modules is used to analyze log data, that was parsed by LogParser.'''
 
 from __future__ import annotations
+from enum import Enum
 
 from utils import get_logger
-from constants import TestStatus
 from tortillas_config import TortillasConfig
 from test_specification import TestSpec
 
@@ -14,6 +14,13 @@ class TestResult:
     The actuall result is determined by analyzing log data using
     the config entries in `TortillasConfig.analyze`.
     '''
+
+    class Status(Enum):
+        '''Represents the final result of a test run.'''
+        DISABLED = 1
+        SUCCESS = 2
+        FAILED = 3
+        PANIC = 4
 
     def __init__(self, test_repr: str, test_spec: TestSpec,
                  config: TortillasConfig):
@@ -27,19 +34,19 @@ class TestResult:
         self.retry = False
 
         self.errors: list[str] = []
-        self.status: TestStatus
+        self.status: self.Status
         if test_spec.disabled:
-            self.status = TestStatus.DISABLED
+            self.status = self.Status.DISABLED
             return
 
     def analyze(self, log_data: dict[str, list[str]]):
         '''Analyze `log_data` using the analyze configuration.'''
-        self.status = TestStatus.SUCCESS
+        self.status = self.Status.SUCCESS
 
         for analyze_config_entry in self.config:
             log_data_name = analyze_config_entry.name
             status = (None if not analyze_config_entry.status else
-                      TestStatus[analyze_config_entry.status])
+                      self.Status[analyze_config_entry.status])
 
             self.logger.debug(f'Analyzing {analyze_config_entry.name}')
 
@@ -57,10 +64,10 @@ class TestResult:
             elif analyze_config_entry.mode == 'exit_codes':
                 self.check_exit_codes(log_data[log_data_name], status)
 
-            if self.status == TestStatus.PANIC:
+            if self.status == self.Status.PANIC:
                 break
 
-    def _set_status(self, status: TestStatus | None):
+    def _set_status(self, status: TestResult.Status | None):
         if not status:
             return
 
@@ -72,10 +79,10 @@ class TestResult:
         Add an `error` during execution. Used for example, if a timeout occurs.
         '''
         self.errors.append(error)
-        self.status = TestStatus.FAILED
+        self.status = self.Status.FAILED
 
     def add_errors(self, log_data_entry: list[str],
-                   status: TestStatus | None = None):
+                   status: TestResult.Status | None = None):
         '''Handle config mode \'ad_as_error\', set `status`, if supplied'''
         if not log_data_entry:
             return
@@ -87,7 +94,7 @@ class TestResult:
 
     def check_expect_stdout(self, expect_stdout: list[str],
                             stdout: list[str],
-                            status: TestStatus | None = None):
+                            status: TestResult.Status | None = None):
         '''Handle config mode \'expect_stdout\', set `status`, if supplied'''
         if not expect_stdout:
             return
@@ -105,12 +112,12 @@ class TestResult:
             self._set_status(status)
 
     def check_exit_codes(self, exit_codes: list[str],
-                         status: TestStatus | None = None):
+                         status: TestResult.Status | None = None):
         '''Handle config mode \'exit_codes\', set `status`, if supplied'''
         if not exit_codes:
             self.errors.append('Missing exit code!')
-            if self.status == TestStatus.SUCCESS:
-                self.status = TestStatus.FAILED
+            if self.status == self.Status.SUCCESS:
+                self.status = self.Status.FAILED
                 return
 
         for exit_code in exit_codes:
@@ -119,7 +126,7 @@ class TestResult:
                 exit_code_int = int(exit_code)
             except ValueError:
                 self.errors.append(f'Failed to parse exit code {exit_code}')
-                self.status = TestStatus.FAILED
+                self.status = self.Status.FAILED
                 self.retry = True
                 return
 

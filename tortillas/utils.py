@@ -18,8 +18,8 @@ def get_logger(name: str, prefix: bool = False) -> logging.Logger:
         log.propagate = False
         console_handler = logging.StreamHandler()
         log.addHandler(console_handler)
-        format = '%(name)s: %(message)s' if prefix else '%(message)s'
-        console_handler.setFormatter(logging.Formatter(format))
+        log_format = '%(name)s: %(message)s' if prefix else '%(message)s'
+        console_handler.setFormatter(logging.Formatter(log_format))
     log.setLevel(LOG_LEVEL)
     return log
 

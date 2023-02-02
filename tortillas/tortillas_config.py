@@ -11,6 +11,35 @@ from utils import get_logger
 from constants import TORTILLAS_CONFIG_PATH
 
 
+@dataclasses.dataclass
+class ParseConfigEntry:
+    '''
+    Configuration of the log_parser.
+    '''
+
+    name: str
+    scope: str
+    pattern: str
+
+    pattern_compiled: re.Pattern | None = None
+
+    def compile_pattern(self) -> ParseConfigEntry:
+        '''Use `re.compile`, to compile the `self.pattern`.'''
+        self.pattern_compiled = re.compile(self.pattern, re.DOTALL)
+        return self
+
+
+@dataclasses.dataclass
+class AnalyzeConfigEntry:
+    '''
+    Configuration for analyzing log data.
+    '''
+
+    name: str
+    mode: str
+    status: str = dataclasses.field(default_factory=str)
+
+
 @dataclasses.dataclass(eq=False)
 class TortillasConfig:
     '''
@@ -63,32 +92,3 @@ class TortillasConfig:
                 else:
                     self.logger.debug(f'{field.name}: {config[field.name]}')
                     setattr(self, field.name, config[field.name])
-
-
-@dataclasses.dataclass
-class ParseConfigEntry:
-    '''
-    Configuration of the log_parser.
-    '''
-
-    name: str
-    scope: str
-    pattern: str
-
-    pattern_compiled: re.Pattern | None = None
-
-    def compile_pattern(self) -> ParseConfigEntry:
-        '''Use `re.compile`, to compile the `self.pattern`.'''
-        self.pattern_compiled = re.compile(self.pattern, re.DOTALL)
-        return self
-
-
-@dataclasses.dataclass
-class AnalyzeConfigEntry:
-    '''
-    Configuration for analyzing log data.
-    '''
-
-    name: str
-    mode: str
-    status: str = dataclasses.field(default_factory=str)
