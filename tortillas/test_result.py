@@ -12,8 +12,6 @@ class TestResult:
         self.logger = get_logger(f'{test_repr} result', prefix=True)
 
         self.test_repr = test_repr
-        self.test_config = test_spec
-
         self.config = config.analyze
         self.expect_exit_codes = ([0] if not test_spec.expect_exit_codes
                                   else test_spec.expect_exit_codes)
@@ -22,7 +20,7 @@ class TestResult:
 
         self.errors: list[str] = []
         self.status: TestStatus
-        if self.test_config.disabled:
+        if test_spec.disabled:
             self.status = TestStatus.DISABLED
             return
 

@@ -8,7 +8,8 @@ import threading
 import subprocess
 
 from utils import get_logger
-from constants import TestStatus, TEST_FOLDER_PATH, SWEB_BUILD_DIR, TEST_RUN_DIR, QEMU_VMSTATE_TAG
+from constants import (TestStatus,
+                       SWEB_BUILD_DIR, TEST_RUN_DIR, QEMU_VMSTATE_TAG)
 from tortillas_config import TortillasConfig
 from test_specification import TestSpec
 from test_result import TestResult
@@ -65,72 +66,174 @@ def get_tests_from_specs(specs: list[TestSpec], repeat: int,
     return tests
 
 
-def run_tests(tests: list[TestRun], architecture: str, progress_bar: ProgressBar,
-              config: TortillasConfig):
-    test_queue = list(tests[::-1])
-    running_tests: dict[str, threading.Thread] = {}
+class TestRunner:
+    def __init__(self,  specs: list[TestSpec], repeat: int, architecture: str,
+                 config: TortillasConfig, progress_bar: ProgressBar):
+        self.logger = get_logger('global')
 
-    progress_bar.create_run_tests_counters(len(tests))
-    lock = threading.Lock()
+        self.architecture = architecture
+        self.progress_bar = progress_bar
+        self.config = config
 
-    def thread_callback(test: TestRun):
-        with lock:
-            running_tests.pop(repr(test))
+        self.test_runs = [TestRun(spec, num, config)
+                          for spec in specs if not spec.disabled
+                          for num in range(repeat)]
 
-            if test.result.retry:
-                test_logger = get_logger(repr(test), prefix=True)
-                if test.result.panic:
-                    panic = ''.join(test.result.errors)
-                    test_logger.info(f'Restarting test, because of {panic}')
+        self.disabled_specs = [spec for spec in specs if spec.disabled]
 
-                test.result = TestResult(repr(test), test.spec, config)
+        if repeat > 1:
+            self.test_runs.sort(key=(lambda test: test.run_number))
 
-                progress_bar.update_counter(
-                        progress_bar.Counter.RUNNING, incr=-1)
-                test_queue.append(test)
+        self.success = False
 
-                return
+        self.logger.info('Registered tests:')
+        for test in self.test_runs:
+            self.logger.info(f'- {repr(test)}')
+        self.logger.info('')
 
-            counter_type = progress_bar.Counter.FAIL
-            if test.result.status == TestStatus.SUCCESS:
-                counter_type = progress_bar.Counter.SUCCESS
+    def start(self):
+        test_queue = list(self.test_runs[::-1])
+        running_tests: dict[str, threading.Thread] = {}
 
-            progress_bar.update_counter(counter_type,
-                                        progress_bar.Counter.RUNNING)
+        self.progress_bar.create_run_tests_counters(len(self.test_runs))
+        lock = threading.Lock()
+        counters = self.progress_bar.Counter
 
-    def run_test(test_queue: list[TestRun]):
-        with lock:
-            test = test_queue.pop()
-            progress_bar.update_counter(progress_bar.Counter.RUNNING)
+        def thread_callback(test_run: TestRun):
+            with lock:
+                running_tests.pop(repr(test_run))
 
-            thread = threading.Thread(target=_run, args=[
-                                      test, architecture, config,
-                                      thread_callback])
+                if test_run.result.retry:
+                    test_logger = get_logger(repr(test_run), prefix=True)
+                    if test_run.result.panic:
+                        panic = ''.join(test_run.result.errors)
+                        test_logger.info(
+                                f'Restarting test, because of {panic}')
 
-            running_tests[repr(test)] = thread
-            thread.start()
+                    test_run.result = TestResult(repr(test_run), test_run.spec,
+                                                 self.config)
 
-    # Run all the tests
-    for _ in range(config.threads):
-        if test_queue:
-            run_test(test_queue)
+                    self.progress_bar.update_counter(
+                            self.progress_bar.Counter.RUNNING, incr=-1)
+                    test_queue.append(test_run)
 
-    while test_queue or running_tests:
-        progress_bar.refresh()
+                    return
 
-        if not test_queue:
-            # Probably waiting for a test timeout -> wait longer.
-            time.sleep(1)
-            continue
+                counter = counters.FAIL
+                if test_run.result.status == TestStatus.SUCCESS:
+                    counter = counters.SUCCESS
 
-        if len(running_tests) < config.threads:
-            run_test(test_queue)
+                self.progress_bar.update_counter(counter,
+                                                 counters.RUNNING)
 
-        time.sleep(0.0001)  # Basically yield
-    # Testing finished
+        def run_test(test_queue: list[TestRun]):
+            with lock:
+                test = test_queue.pop()
+                self.progress_bar.update_counter(
+                        self.progress_bar.Counter.RUNNING)
+
+                thread = threading.Thread(target=_run, args=[
+                                          test, self.architecture, self.config,
+                                          thread_callback])
+
+                running_tests[repr(test)] = thread
+                thread.start()
+
+        # Run all the tests
+        for _ in range(self.config.threads):
+            if test_queue:
+                run_test(test_queue)
+
+        while test_queue or running_tests:
+            self.progress_bar.refresh()
+
+            if not test_queue:
+                # Probably waiting for a test timeout -> wait longer.
+                time.sleep(1)
+                continue
+
+            if len(running_tests) < self.config.threads:
+                run_test(test_queue)
+
+            time.sleep(0.0001)  # Basically yield
+        # Testing finished
+
+        self.success = not any(
+                test_run.result.status in (TestStatus.FAILED, TestStatus.PANIC)
+                for test_run in self.test_runs)
+
+    def create_snapshot(self):
+        _create_snapshot(self.architecture, QEMU_VMSTATE_TAG, self.config)
+
+    def get_markdown_test_summary(self) -> str:
+        '''
+        Get a simple summary of all test runs.
+        The summary contains table of tests with their run status and
+        a summary of all errors that occured.
+        '''
+
+        def markdown_table_row(cols: list[str],
+                               widths: list[int] = [40, 20]) -> str:
+            assert (len(widths) == len(cols))
+            res = '|'
+            for cell, width in zip(cols, widths):
+                padding = width - len(cell) - 2
+                if padding < 0:
+                    raise ValueError(f'\"{cell}\" is to long '
+                                     'for the table width')
+                res += f" {cell}{' '*padding}|"
+            return res + '\n'
+
+        def markdown_table_delim(widths: list[int] = [40, 20]):
+            res = '|'
+            for width in widths:
+                res += f" {'-'*(width-3)} |"
+            return res + '\n'
+
+        self.test_runs.sort(key=(lambda test: test.result.status.name))
+
+        summary = ''
+        summary += markdown_table_row(['Test run', 'Result'])
+        summary += markdown_table_delim()
+
+        for run in self.disabled_specs:
+            summary += markdown_table_row([run, TestStatus.DISABLED.name])
+
+        for test in self.test_runs:
+            summary += markdown_table_row([repr(test),
+                                          test.result.status.name])
+
+        if not self.success:
+            failed_test_runs = (test_run for test_run in self.test_runs
+                                if test_run.result.status in
+                                [TestStatus.FAILED, TestStatus.PANIC])
+
+            summary += '\n\n'
+            summary += '## Errors\n\n'
+
+            for run in failed_test_runs:
+                summary += f'### {repr(run)} - {run.tmp_dir}/out.log\n\n'
+                for error in run.result.errors:
+                    if error[-1] not in ['\n', '\r']:
+                        error = f'{error}\n'
+
+                    if error[-2:] == '\n\n':
+                        error = error[:-1]
+
+                    if '=== Begin of backtrace' in error:
+                        summary += f'```\n{error}```'
+                        continue
+
+                    summary += f'- {error}'
+                summary += '\n'
+
+        with open('tortillas_summary.md', 'w') as summary_file:
+            summary_file.write(summary)
+
+        return summary
 
 
-def create_snapshot(architecture: str, label: str, config: TortillasConfig):
+def _create_snapshot(architecture: str, label: str, config: TortillasConfig):
     log = get_logger('Create snapshot', prefix=True)
 
     log.info('Booting SWEB')
@@ -189,76 +292,6 @@ def create_snapshot(architecture: str, label: str, config: TortillasConfig):
     subprocess.run(['cp', snapshot_qcow2_path,
                     f'{TEST_RUN_DIR}/SWEB-snapshot.qcow2'],
                    check=True)
-
-
-def get_markdown_test_summary(tests: list[TestRun],
-                              disabled_specs: list[TestSpec],
-                              success: bool) -> str:
-    '''
-    Get a simple summary of all test runs.
-    The summary contains table of tests with their run status and
-    a summary of all errors that occured.
-    '''
-
-    def markdown_table_row(cols: list[str],
-                           widths: list[int] = [40, 20]) -> str:
-        assert (len(widths) == len(cols))
-        res = '|'
-        for cell, width in zip(cols, widths):
-            padding = width - len(cell) - 2
-            if padding < 0:
-                raise ValueError(f'\"{cell}\" is to long '
-                                 'for the table width')
-            res += f" {cell}{' '*padding}|"
-        return res + '\n'
-
-    def markdown_table_delim(widths: list[int] = [40, 20]):
-        res = '|'
-        for width in widths:
-            res += f" {'-'*(width-3)} |"
-        return res + '\n'
-
-    tests.sort(key=(lambda test: test.result.status.name))
-
-    summary = ''
-    summary += markdown_table_row(['Test run', 'Result'])
-    summary += markdown_table_delim()
-
-    for spec in disabled_specs:
-        summary += markdown_table_row([spec, TestStatus.DISABLED.name])
-
-    for test in tests:
-        summary += markdown_table_row([repr(test),
-                                      test.result.status.name])
-
-    if not success:
-        failed_tests = (test for test in tests
-                        if test.result.status in
-                        [TestStatus.FAILED, TestStatus.PANIC])
-
-        summary += '\n\n'
-        summary += '## Errors\n\n'
-
-        for spec in failed_tests:
-            summary += f'### {repr(spec)} - {spec.get_tmp_dir()}/out.log\n\n'
-            for error in spec.result.errors:
-                if error[-1] not in ['\n', '\r']:
-                    error = f'{error}\n'
-
-                if error[-2:] == '\n\n':
-                    error = error[:-1]
-
-                if '=== Begin of backtrace' in error:
-                    summary += f'```\n{error}```'
-                    continue
-
-                summary += f'- {error}'
-            summary += '\n'
-
-    with open('tortillas_summary.md', 'w') as summary_file:
-        summary_file.write(summary)
-
-    return summary
 
 
 def _run(test: TestRun, architecture: str, config: TortillasConfig,

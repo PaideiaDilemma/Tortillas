@@ -66,7 +66,7 @@ class TestSpec():
         self.test_src_path = test_src_path
         self.logger = get_logger(f'Test config for {test_name}', prefix=True)
 
-        config = self.get_yaml_config_header(test_src_path)
+        config = self._parse_yaml_config_header(test_src_path)
 
         for field in dataclasses.fields(self):
             if field.name not in config.keys():
@@ -81,7 +81,7 @@ class TestSpec():
             else:
                 setattr(self, field.name, config[field.name])
 
-    def get_yaml_config_header(self, test_src_path: str) -> dict:
+    def _parse_yaml_config_header(self, test_src_path: str) -> dict:
         test_config_raw = ''
         out: dict = {}
         with open(test_src_path, 'r') as test_src_file:

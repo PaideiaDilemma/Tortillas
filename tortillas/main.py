@@ -9,10 +9,9 @@ import sys
 import threading
 
 from utils import get_logger
-from constants import TestStatus, SWEB_BUILD_DIR, TEST_RUN_DIR, QEMU_VMSTATE_TAG
-from test_runner import (create_snapshot, run_tests, get_tests_from_specs,
-                         get_markdown_test_summary)
+from constants import SWEB_BUILD_DIR, TEST_RUN_DIR
 from test_specification import get_test_specs, filter_test_specs
+from test_runner import TestRunner
 from tortillas_config import TortillasConfig
 from progress_bar import ProgressBar
 
@@ -28,11 +27,15 @@ def _exception_hook(args):
 threading.excepthook = _exception_hook
 
 
-def _build_sweb(setup: bool, progress_bar: ProgressBar):
+def _build_sweb(setup: bool, architecture: str):
     if setup:
-        progress_bar.update_main_status('Setting up SWEB build')
         # This command is equivalent to setup_cmake.sh
-        os.system(f'cmake -B\"{SWEB_BUILD_DIR}\" -H.')
+        cmd = f'cmake -B\"{SWEB_BUILD_DIR}\" -H.'
+
+        if architecture in ('x86_32', 'x86/32'):
+            cmd += ' -DARCH=x86/32'
+
+        os.system(cmd)
 
     if os.system(f'cmake --build {SWEB_BUILD_DIR}') != 0:
         sys.exit(-1)
@@ -86,47 +89,37 @@ def main():
 
     all_specs = get_test_specs(sweb_src_folder, args.test_glob)
     selected_specs = filter_test_specs(all_specs, args.category, args.tag)
-    disabled_specs = [spec for spec in selected_specs if spec.disabled]
-
     if len(selected_specs) == 0:
-        log.error('No tests were found')
+        log.error('No test specs were found')
         sys.exit(-1)
 
-    tests = get_tests_from_specs(selected_specs, args.repeat, config)
+    test_runner = TestRunner(selected_specs, args.repeat, args.arch,
+                             config, progress_bar)
 
-    log.info('Registered tests:')
-    for test in tests:
-        log.info(f'- {repr(test)}')
-    log.info('')
-
+    progress_bar.update_main_status('Building SWEB')
     if not args.skip_build:
-        _build_sweb(not args.skip_setup, progress_bar)
+        _build_sweb(not args.skip_setup, args.arch)
 
     if not os.path.exists(TEST_RUN_DIR):
         os.mkdir(TEST_RUN_DIR)
 
     progress_bar.update_main_status('Creating snapshot')
-    create_snapshot(args.arch, QEMU_VMSTATE_TAG, config)
+    test_runner.create_snapshot()
 
     progress_bar.update_main_status('Running tests')
-    run_tests(tests, args.arch, progress_bar, config)
+    test_runner.start()
 
-    success = not any(
-            test.result.status in (TestStatus.FAILED, TestStatus.PANIC)
-            for test in tests)
-
-    if not success:
+    if not test_runner.success:
         log.error('Tortillas has failed!')
 
     log.info('Completed tortillas© test system\n')
 
-    summary = get_markdown_test_summary(tests, disabled_specs, success)
-
+    summary = test_runner.get_markdown_test_summary()
     log.info('')
     log.info(summary)
 
     logging.shutdown()
-    sys.exit(not success)
+    sys.exit(not test_runner.success)
 
 
 if __name__ == "__main__":
