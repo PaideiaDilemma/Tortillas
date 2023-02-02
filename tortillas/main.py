@@ -6,7 +6,6 @@ import argparse
 import logging
 import os
 import sys
-import threading
 
 from utils import get_logger
 from constants import SWEB_BUILD_DIR, TEST_RUN_DIR
@@ -14,17 +13,6 @@ from test_specification import get_test_specs, filter_test_specs
 from test_runner import TestRunner
 from tortillas_config import TortillasConfig
 from progress_bar import ProgressBar
-
-
-# On exception, exit the program
-def _exception_hook(args):
-    log = get_logger('global')
-    log.error("XO", exc_info=args)
-    sys.exit(-1)
-
-
-# Set the exception hook for all threads
-threading.excepthook = _exception_hook
 
 
 def _build_sweb(setup: bool, architecture: str):
