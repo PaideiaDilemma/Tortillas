@@ -95,7 +95,7 @@ class TestSpec():
                     continue
                 self.logger.error(
                         f'Expected option \"{field.name}\"')
-                sys.exit(-1)
+                sys.exit(1)
 
             if field.name == 'tags':
                 self.tags = [str(tag) for tag in config.pop('tags')]

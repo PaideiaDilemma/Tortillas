@@ -26,7 +26,7 @@ def _build_sweb(setup: bool, architecture: str):
         os.system(cmd)
 
     if os.system(f'cmake --build {SWEB_BUILD_DIR}') != 0:
-        sys.exit(-1)
+        sys.exit(1)
     print()
 
 
@@ -79,7 +79,7 @@ def main():
     selected_specs = filter_test_specs(all_specs, args.category, args.tag)
     if len(selected_specs) == 0:
         log.error('No test specs were found')
-        sys.exit(-1)
+        sys.exit(1)
 
     test_runner = TestRunner(selected_specs, args.repeat, args.arch,
                              config, progress_bar)

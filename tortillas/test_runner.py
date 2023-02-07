@@ -262,12 +262,11 @@ def _create_snapshot(architecture: str, label: str, config: TortillasConfig):
     with QemuInterface(
             tmp_dir=tmp_dir,
             qcow2_path=snapshot_qcow2_path,
-            arch=architecture,
-            logger=log
+            arch=architecture
             ) as qemu:
 
         if not qemu.is_alive():
-            sys.exit(-1)
+            sys.exit(1)
 
         log.debug('Waiting for bootup...')
 
@@ -293,7 +292,7 @@ def _create_snapshot(architecture: str, label: str, config: TortillasConfig):
     if bootup_error:
         with open(f'{tmp_dir}/out.log', 'r') as log_file:
             log.info(log_file.read())
-        sys.exit(-1)
+        sys.exit(1)
 
     subprocess.run(['cp', snapshot_qcow2_path,
                     f'{TEST_RUN_DIR}/SWEB-snapshot.qcow2'],
@@ -324,7 +323,6 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
             tmp_dir=tmp_dir,
             qcow2_path=snapshot_path,
             arch=architecture,
-            logger=log,
             vmstate=QEMU_VMSTATE_TAG
             ) as qemu:
 

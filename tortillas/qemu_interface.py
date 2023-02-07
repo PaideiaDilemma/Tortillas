@@ -10,7 +10,6 @@ import os
 import sys
 import time
 import shlex
-import logging
 import subprocess
 from enum import Enum
 
@@ -19,15 +18,14 @@ from utils import get_logger
 
 class QemuInterface():
     '''
-    Withable class, that creates a qemu process and named pipes, to communicate
+    Withable class, that creates a qemu process and named pipes to communicate
     with that process.
     '''
 
     def __init__(self, tmp_dir: str, qcow2_path: str, arch: str,
-                 logger: logging.Logger,
                  vmstate: str | None = None,
                  interrupts: bool = True):
-        self.logger = logger
+        self.logger = get_logger(f'QemuInterface {tmp_dir}')
 
         self.arch = arch
         self.vmstate = vmstate
@@ -85,14 +83,14 @@ class QemuInterface():
                               exc_info=(exc_type, exc_value, traceback))
 
     def _popen_qemu(self) -> subprocess.Popen:
-        if self.arch == 'x86_64':
+        if self.arch in ('x86_64', 'x86/64'):
             cmd = (f'qemu-system-x86_64 -m 8M -cpu qemu64 '
                    f'-drive file={self.qcow2_path},index=0,media=disk '
                    f'-debugcon file:{self.log_file} '
                    f'-monitor pipe:{self.fifos} '
                    '-nographic -display none -serial /dev/null')
 
-        elif self.arch == 'x86_32':
+        elif self.arch in ('x86_32', 'x86/32'):
             cmd = (f'qemu-system-i386 -m 8M -cpu qemu32 '
                    f'-drive file={self.qcow2_path},index=0,media=disk '
                    f'-debugcon file:{self.log_file} '
@@ -100,10 +98,8 @@ class QemuInterface():
                    '-nographic -display none -serial /dev/null')
 
         else:
-            log = get_logger('global')
-            log.error(
-                f'Architecture {self.arch} not yet supported in tortillas')
-            sys.exit(-1)
+            raise NotImplementedError(
+                    f'Architecture {self.arch} not yet supported (yet)')
 
         if self.vmstate:
             cmd += f' -loadvm {self.vmstate}'
@@ -120,40 +116,36 @@ class QemuInterface():
             return False
         return True
 
-    def monitor_command(self, data: list[str] | str):
+    def monitor_command(self, command: str):
         '''
         Send a qemu monitor command.
         See https://www.qemu.org/docs/master/system/monitor.html
         '''
-        if not isinstance(data, list):
-            data = [data]
-
-        for line in data:
-            written_n = self.input.write(line)
-            self.input.flush()
-            # I ran into some problems without this sleep...
-            # Somtimes got "tesT-pthread.." instead of "test_pthread"
-            time.sleep(0.2)
-            if len(line) != written_n:
-                self.logger.error(
-                    f'Tried to send {len(data)} bytes to input pipe. '
-                    f'Actually send: {written_n}'
-                )
+        written_n = self.input.write(command)
+        self.input.flush()
+        # I ran into some problems without this sleep...
+        # Somtimes got "tesT-pthread.." instead of "test_pthread"
+        time.sleep(0.2)
+        if len(command) != written_n:
+            self.logger.error(
+                f'Tried to send {len(command)} bytes to input pipe. '
+                f'Actually send: {written_n}'
+            )
 
     def sweb_input(self, string: str):
         '''Input to sweb via qemu sendkey.'''
-        data = []
         keymap = {'\n': 'kp_enter', ' ': 'spc', '.': 'dot',
                   '_': 'shift-minus', '-': 'minus', '/': 'slash'}
         for char in string:
+            command = ''
             if char in keymap:
-                data.append(f'sendkey {keymap[char]} 100\n')
+                command = f'sendkey {keymap[char]} 100\n'
             elif char.isupper():
-                data.append(f'sendkey shift-{char.lower()} 100\n')
+                command = f'sendkey shift-{char.lower()} 100\n'
             else:
-                data.append(f'sendkey {char} 100\n')
+                command = f'sendkey {char} 100\n'
 
-        self.monitor_command(data)
+            self.monitor_command(command)
 
 
 class InterruptWatchdog:
@@ -168,6 +160,7 @@ class InterruptWatchdog:
     Note, that interrupt logs contain some interresting metadata, that one
     could collect in here.
     '''
+
     class Status(Enum):
         '''Status of the interrupt watchdog.'''
         OK = 1
@@ -202,8 +195,8 @@ class InterruptWatchdog:
     def wait_until(self, int_num: str, int_regs: dict[str, int],
                    timeout: int) -> Status:
         '''
-        Loop until we find an interrupt, that matches int_num and int_regs.
-        If int_regs is empty it will match the first interrupt with int_num.
+        Loop until we find an interrupt, that matches `int_num` and `int_regs`.
+        If `int_regs` is empty it will match the first interrupt with `int_num`.
         '''
         max_iterations = int(timeout / self.sleep_time)
 
@@ -282,7 +275,7 @@ class InterruptWatchdog:
     @staticmethod
     def search_interrupt(int_num: int, search_regs: dict[str, int],
                          lines: list[str]) -> dict[str, int] | None:
-        '''Search for a specific interrupt in lines.'''
+        '''Search for a specific interrupt in `lines`.'''
         for index, line in enumerate(lines):
             if f'v={int_num}' not in line:
                 continue

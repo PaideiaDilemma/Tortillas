@@ -72,7 +72,7 @@ class TortillasConfig:
                 config = yaml.safe_load(config_raw)
             except yaml.YAMLError as exc:
                 self.logger.error(exc)
-                sys.exit(-1)
+                sys.exit(1)
 
             for field in dataclasses.fields(self):
                 if field.name not in config.keys():
@@ -80,7 +80,7 @@ class TortillasConfig:
                         continue
                     self.logger.error(
                         f'Expected option \"{field.name}\"')
-                    sys.exit(-1)
+                    sys.exit(1)
 
                 if field.name == 'parse':
                     self.parse = [ParseConfigEntry(**c).compile_pattern()
