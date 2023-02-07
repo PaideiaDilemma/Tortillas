@@ -1,0 +1,54 @@
+diff --git a/userspace/tests/panic1.c b/userspace/tests/panic1.c
+new file mode 100644
+index 00000000..af3370ff
+--- /dev/null
++++ b/userspace/tests/panic1.c
+@@ -0,0 +1,12 @@
++/*
++# Test specification
++category: panic
++description: "Dummy test, to demo a kernel panic triggered by exit(1)"
++*/
++
++#include "stdlib.h"
++
++int main()
++{
++  exit(1);
++}
+diff --git a/userspace/tests/panic2.c b/userspace/tests/panic2.c
+new file mode 100644
+index 00000000..12d0edc2
+--- /dev/null
++++ b/userspace/tests/panic2.c
+@@ -0,0 +1,12 @@
++/*
++# Test specification
++category: panic
++description: "Dummy test, to demo a locking error triggered by exit(2)"
++*/
++
++#include "stdlib.h"
++
++int main()
++{
++  exit(2);
++}
+diff --git a/userspace/tests/userspace-assert.c b/userspace/tests/userspace-assert.c
+new file mode 100644
+index 00000000..f64f899d
+--- /dev/null
++++ b/userspace/tests/userspace-assert.c
+@@ -0,0 +1,12 @@
++/*
++# Test specification
++category: panic
++description: "Dummy test, to demo userspace asserts"
++*/
++
++#include "assert.h"
++
++int main()
++{
++  assert(1==2);
++}
