@@ -7,12 +7,12 @@ import logging
 import os
 import sys
 
-from utils import get_logger
-from constants import SWEB_BUILD_DIR, TEST_RUN_DIR
-from test_specification import get_test_specs, filter_test_specs
-from test_runner import TestRunner
-from tortillas_config import TortillasConfig
-from progress_bar import ProgressBar
+from .utils import get_logger
+from .constants import SWEB_BUILD_DIR, TEST_RUN_DIR
+from .test_specification import get_test_specs, filter_test_specs
+from .test_runner import TestRunner
+from .tortillas_config import TortillasConfig
+from .progress_bar import ProgressBar
 
 
 def _build_sweb(setup: bool, architecture: str):

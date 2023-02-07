@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import re
 
-from constants import LOG_LEVEL
+from .constants import LOG_LEVEL
 
 
 def get_logger(name: str, prefix: bool = False) -> logging.Logger:

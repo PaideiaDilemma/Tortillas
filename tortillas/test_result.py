@@ -3,9 +3,9 @@
 from __future__ import annotations
 from enum import Enum
 
-from utils import get_logger
-from tortillas_config import TortillasConfig
-from test_specification import TestSpec
+from .utils import get_logger
+from .tortillas_config import TortillasConfig
+from .test_specification import TestSpec
 
 
 class TestResult:

@@ -3,7 +3,7 @@
 from __future__ import annotations
 from enum import Enum
 
-from utils import get_logger
+from .utils import get_logger
 
 
 class ProgressBar:

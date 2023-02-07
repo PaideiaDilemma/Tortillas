@@ -7,8 +7,8 @@ import pathlib
 import dataclasses
 import yaml
 
-from utils import get_logger
-from constants import TEST_FOLDER_PATH
+from .utils import get_logger
+from .constants import TEST_FOLDER_PATH
 
 
 def get_test_specs(sweb_src_folder: str, test_glob: str) -> list[TestSpec]:

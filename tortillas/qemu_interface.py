@@ -13,7 +13,7 @@ import shlex
 import subprocess
 from enum import Enum
 
-from utils import get_logger
+from .utils import get_logger
 
 
 class QemuInterface():

@@ -9,15 +9,15 @@ import pathlib
 import threading
 import subprocess
 
-from utils import get_logger
-from constants import (SWEB_BUILD_DIR, TEST_RUN_DIR, QEMU_VMSTATE_TAG,
+from .utils import get_logger
+from .constants import (SWEB_BUILD_DIR, TEST_RUN_DIR, QEMU_VMSTATE_TAG,
                        INT_SYSCALL)
-from tortillas_config import TortillasConfig
-from test_specification import TestSpec
-from test_result import TestResult
-from log_parser import LogParser
-from progress_bar import ProgressBar
-from qemu_interface import QemuInterface, InterruptWatchdog
+from .tortillas_config import TortillasConfig
+from .test_specification import TestSpec
+from .test_result import TestResult
+from .log_parser import LogParser
+from .progress_bar import ProgressBar
+from .qemu_interface import QemuInterface, InterruptWatchdog
 
 
 class TestRun:

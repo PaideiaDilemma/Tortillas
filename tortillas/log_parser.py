@@ -5,8 +5,8 @@ from __future__ import annotations
 import re
 import logging
 
-from utils import escape_ansi
-from tortillas_config import ParseConfigEntry
+from .utils import escape_ansi
+from .tortillas_config import ParseConfigEntry
 
 
 class LogParser:

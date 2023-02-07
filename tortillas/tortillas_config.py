@@ -7,8 +7,8 @@ import sys
 import dataclasses
 import yaml
 
-from utils import get_logger
-from constants import TORTILLAS_CONFIG_PATH
+from .utils import get_logger
+from .constants import TORTILLAS_CONFIG_PATH
 
 
 @dataclasses.dataclass
