@@ -16,6 +16,10 @@ parse:
     scope: 'BACKTRACE'
     pattern: '(.*)'
 
+  - name: command_not_understood
+    scope: 'SYSCALL'
+    pattern: 'Syscall::write: (Command not understood)'
+
   - name: exit_codes
     scope: 'SYSCALL'
     pattern: 'Syscall::EXIT: called, exit_code: (\d+)'
@@ -33,6 +37,10 @@ analyze:
 
   - name: backtrace
     mode: add_as_error_join
+
+  - name: command_not_understood
+    mode: add_as_error
+    status: FAILED
 
   - name: exit_codes
     mode: exit_codes
