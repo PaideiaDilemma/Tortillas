@@ -35,23 +35,24 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--arch',
-                        help='Set the architecture to build for e.g. x86_64',
+                        help='Set sweb architecture target. '
+                             'Supported: x86_64, x86_32',
                         default='x86_64', type=str)
 
     parser.add_argument('-g', '--test-glob',
-                        help='Identifier of testcases in the test source dir,'
-                             ' e.g. -b test_pthread (tests test_pthread*.c)',
+                        help='Identifier of testcases in the test source dir, '
+                             'e.g. -b test_pthread (tests test_pthread*.c)',
                         default='')
 
     parser.add_argument('-c', '--category', type=str, nargs='*',
                         help='Category or a list of categories to test')
 
     parser.add_argument('-t', '--tag', type=str, nargs='*',
-                        help='tag or list of tags to test')
+                        help='Tag or list of tags to test')
 
     parser.add_argument('-r', '--repeat',
-                        help='Run the specified tests mutiple times.'
-                             'e.g. -r 2 will run all tests 2 times',
+                        help='Run the specified tests mutiple times. '
+                             '-r 2 will run all tests 2 times',
                         default=1, type=int)
 
     parser.add_argument('-a', '--skip-setup',

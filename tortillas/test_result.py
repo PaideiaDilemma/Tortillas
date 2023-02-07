@@ -102,7 +102,7 @@ class TestResult:
         missing_output = False
 
         for expect in expect_stdout:
-            if not any((expect in got for got in stdout)):
+            if not any((expect.strip() in got for got in stdout)):
                 self.errors.append(f'Expected output: {expect}')
                 missing_output = True
 
