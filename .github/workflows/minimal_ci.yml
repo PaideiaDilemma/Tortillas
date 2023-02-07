@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  tortillas:
+  minimal-example:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -26,8 +26,8 @@ jobs:
           sudo apt install -y qemu-utils qemu-system-x86 python3-yaml
 
       - name: Setup sweb
-        run: |
-          ./setup_sweb.sh $(pwd) $(pwd)/sweb
+        run:
+          ./setup_sweb.sh $(pwd) $(pwd)/sweb minimal
 
       - name: Run tortillas
         run: |

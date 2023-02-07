@@ -1,0 +1,43 @@
+threads: 8
+
+bootup_timeout_secs: 20
+default_test_timeout_secs: 120
+
+sc_tortillas_bootup: 69420
+sc_tortillas_finished: 42069
+
+parse:
+
+  - name: kernel_panics
+    scope: 'ALL'
+    pattern: '(KERNEL PANIC:.*)'
+
+  - name: backtrace
+    scope: 'BACKTRACE'
+    pattern: '(.*)'
+
+  - name: exit_codes
+    scope: 'SYSCALL'
+    pattern: 'Syscall::EXIT: called, exit_code: (\d+)'
+
+  - name: userspace_asserts
+    scope: 'SYSCALL'
+    pattern: 'Syscall::write: (Assertion failed:.*)'
+
+
+analyze:
+
+  - name: kernel_panics
+    mode: add_as_error
+    status: PANIC
+
+  - name: backtrace
+    mode: add_as_error_join
+
+  - name: exit_codes
+    mode: exit_codes
+    status: FAILED
+
+  - name: userspace_asserts
+    mode: add_as_error
+    status: FAILED

@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  # Runs on Every Push
+  push:
+  # Runs on Pull Requests
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  minimal-example:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Checkout Sweb
+        uses: actions/checkout@v3
+        with:
+          repository: IAIK/sweb
+          path: sweb
+
+      - name: Install dependencies
+        run: |
+          sudo apt install -y qemu-utils qemu-system-x86 python3-yaml
+
+      - name: Setup sweb
+        run:
+          ./setup_sweb.sh $(pwd) $(pwd)/sweb
+
+      - name: Run tortillas
+        run: |
+          cd ./sweb
+          python3 ../tortillas/main.py
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test_logs
+          path: /tmp/sweb/tortillas/**/out.log
+
+      - name: Adding markdown
+        if: always()
+        run: cat /tmp/sweb/tortillas_summary.md >> $GITHUB_STEP_SUMMARY
