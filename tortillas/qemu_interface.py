@@ -25,7 +25,7 @@ class QemuInterface():
     def __init__(self, tmp_dir: str, qcow2_path: str, arch: str,
                  vmstate: str | None = None,
                  interrupts: bool = True):
-        self.logger = get_logger(f'QemuInterface {tmp_dir}')
+        self.logger = get_logger(f'QemuInterface {tmp_dir}', prefix=True)
 
         self.arch = arch
         self.vmstate = vmstate

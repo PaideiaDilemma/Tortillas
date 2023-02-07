@@ -19,8 +19,8 @@ class TestResult:
         '''Represents the final result of a test run.'''
         DISABLED = 1
         SUCCESS = 2
-        FAILED = 3
-        PANIC = 4
+        PANIC = 3
+        FAILED = 4
 
     def __init__(self, test_repr: str, test_spec: TestSpec,
                  config: TortillasConfig):
@@ -50,11 +50,14 @@ class TestResult:
 
             self.logger.debug(f'Analyzing {analyze_config_entry.name}')
 
+            if not log_data[log_data_name]:
+                continue
+
             if analyze_config_entry.mode == 'add_as_error':
                 self.add_errors(log_data[log_data_name], status)
 
             elif analyze_config_entry.mode == 'add_as_error_join':
-                self.add_errors(''.join(log_data[log_data_name]), status)
+                self.add_errors([''.join(log_data[log_data_name])], status)
 
             elif analyze_config_entry.mode == 'expect_stdout':
                 self.check_expect_stdout(log_data[log_data_name],
@@ -63,9 +66,6 @@ class TestResult:
 
             elif analyze_config_entry.mode == 'exit_codes':
                 self.check_exit_codes(log_data[log_data_name], status)
-
-            if self.status == self.Status.PANIC:
-                break
 
     def _set_status(self, status: TestResult.Status | None):
         if not status:
@@ -114,6 +114,9 @@ class TestResult:
     def check_exit_codes(self, exit_codes: list[str],
                          status: TestResult.Status | None = None):
         '''Handle config mode \'exit_codes\', set `status`, if supplied'''
+        if self.status == self.Status.PANIC:
+            return
+
         if not exit_codes:
             self.errors.append('Missing exit code!')
             if self.status == self.Status.SUCCESS:

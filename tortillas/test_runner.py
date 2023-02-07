@@ -194,6 +194,7 @@ class TestRunner:
                 res += f" {'-'*(width-3)} |"
             return res + '\n'
 
+        self.test_runs.sort(key=(lambda test: repr(test)))
         self.test_runs.sort(key=(lambda test: test.result.status.name))
 
         summary = ''
@@ -219,14 +220,9 @@ class TestRunner:
             for run in failed_runs:
                 summary += f'### {repr(run)} - {run.tmp_dir}/out.log\n\n'
                 for error in run.result.errors:
-                    if error[-1] not in ['\n', '\r']:
-                        error = f'{error}\n'
-
-                    if error[-2:] == '\n\n':
-                        error = error[:-1]
-
+                    error = f'{error.strip()}\n'
                     if '=== Begin of backtrace' in error:
-                        summary += f'```\n{error}```'
+                        summary += f'```\n{error}```\n'
                         continue
 
                     summary += f'- {error}'
