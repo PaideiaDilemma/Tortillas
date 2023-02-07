@@ -8,7 +8,6 @@ import dataclasses
 import yaml
 
 from .utils import get_logger
-from .constants import TORTILLAS_CONFIG_PATH
 
 
 @dataclasses.dataclass
@@ -63,9 +62,9 @@ class TortillasConfig:
     parse: list[ParseConfigEntry] = dataclasses.field(default_factory=list)
     analyze: list[AnalyzeConfigEntry] = dataclasses.field(default_factory=list)
 
-    def __init__(self):
-        self.logger = get_logger('Tortillas yaml config', prefix=True)
-        with open(TORTILLAS_CONFIG_PATH, 'r') as yaml_config_file:
+    def __init__(self, config_file_path: str):
+        self.logger = get_logger('Tortillas config', prefix=True)
+        with open(config_file_path, 'r') as yaml_config_file:
             config_raw = yaml_config_file.read()
 
             try:

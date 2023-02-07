@@ -15,7 +15,7 @@ dependencies = ["pyyaml"]
 fancy = ["enlighten"]
 
 [project.scripts]
-tortillas = "tortillas.main:main"
+tortillas = "tortillas.__main__:main"
 
 [project.urls]
 "Source" = "https://github.com/PaideiaDilemma/Tortillas"

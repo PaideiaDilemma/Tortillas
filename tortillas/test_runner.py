@@ -11,7 +11,7 @@ import subprocess
 
 from .utils import get_logger
 from .constants import (SWEB_BUILD_DIR, TEST_RUN_DIR, QEMU_VMSTATE_TAG,
-                       INT_SYSCALL)
+                        INT_SYSCALL)
 from .tortillas_config import TortillasConfig
 from .test_specification import TestSpec
 from .test_result import TestResult

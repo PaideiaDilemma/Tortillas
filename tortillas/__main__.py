@@ -15,10 +15,10 @@ from .tortillas_config import TortillasConfig
 from .progress_bar import ProgressBar
 
 
-def _build_sweb(setup: bool, architecture: str):
+def _build_sweb(src_directory: str, setup: bool, architecture: str):
     if setup:
         # This command is equivalent to setup_cmake.sh
-        cmd = f'cmake -B\"{SWEB_BUILD_DIR}\" -H.'
+        cmd = f'cmake -B\"{SWEB_BUILD_DIR}\" -H\"{src_directory}\"'
 
         if architecture in ('x86_32', 'x86/32'):
             cmd += ' -DARCH=x86/32'
@@ -34,26 +34,18 @@ def main():
     log = get_logger('global')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--arch',
-                        help='Set sweb architecture target. '
-                             'Supported: x86_64, x86_32',
-                        default='x86_64', type=str)
+    parser.add_argument('-S', '--sweb-path', type=str,
+                        help="Path to a sweb src directory",
+                        default=os.getcwd())
 
-    parser.add_argument('-g', '--test-glob',
-                        help='Identifier of testcases in the test source dir, '
-                             'e.g. -b test_pthread (tests test_pthread*.c)',
+    parser.add_argument('-C', '--config-path', type=str,
+                        help="Path to a tortillas config file",
                         default='')
 
-    parser.add_argument('-c', '--category', type=str, nargs='*',
-                        help='Category or a list of categories to test')
-
-    parser.add_argument('-t', '--tag', type=str, nargs='*',
-                        help='Tag or list of tags to test')
-
-    parser.add_argument('-r', '--repeat',
-                        help='Run the specified tests mutiple times. '
-                             '-r 2 will run all tests 2 times',
-                        default=1, type=int)
+    parser.add_argument('--arch', type=str,
+                        help='Set sweb architecture target. '
+                             'Supported: x86_64, x86_32',
+                        default='x86_64')
 
     parser.add_argument('-a', '--skip-setup',
                         action='store_true',
@@ -67,14 +59,35 @@ def main():
                         action='store_true',
                         help='Turn of the progress bar')
 
+    parser.add_argument('-g', '--test-glob',
+                        help='Identifier of testcases in the test source dir, '
+                             'e.g. -b test_pthread (tests test_pthread*.c)',
+                        default='')
+
+    parser.add_argument('-c', '--category', type=str, nargs='*',
+                        help='Category or a list of categories to test')
+
+    parser.add_argument('-t', '--tag', type=str, nargs='*',
+                        help='Tag or list of tags to test')
+
+    parser.add_argument('-r', '--repeat', type=int,
+                        help='Run the specified tests mutiple times. '
+                             '-r 2 will run all tests 2 times',
+                        default=1)
+
     args = parser.parse_args()
 
-    sweb_src_folder = os.getcwd()
+    sweb_src_folder = args.sweb_path
+    if not args.config_path:
+        args.config_path = f'{sweb_src_folder}/tortillas_config.yml'
+
+    tortillas_config_path = args.config_path.replace(
+            '{sweb_path}', sweb_src_folder)
 
     progress_bar = ProgressBar(args.no_progress)
     log.info('Starting tortillas© test system\n')
 
-    config = TortillasConfig()
+    config = TortillasConfig(tortillas_config_path)
 
     all_specs = get_test_specs(sweb_src_folder, args.test_glob)
     selected_specs = filter_test_specs(all_specs, args.category, args.tag)
@@ -87,7 +100,7 @@ def main():
 
     progress_bar.update_main_status('Building SWEB')
     if not args.skip_build:
-        _build_sweb(not args.skip_setup, args.arch)
+        _build_sweb(sweb_src_folder, not args.skip_setup, args.arch)
 
     if not os.path.exists(TEST_RUN_DIR):
         os.mkdir(TEST_RUN_DIR)

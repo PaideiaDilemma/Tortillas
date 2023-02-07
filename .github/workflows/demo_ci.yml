@@ -31,8 +31,7 @@ jobs:
 
       - name: Run tortillas
         run: |
-          cd ./sweb
-          python3 ../tortillas/main.py
+          python3 -m tortillas -S ./sweb
 
       - uses: actions/upload-artifact@v3
         if: always()
@@ -59,7 +58,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt install -y qemu-utils qemu-system-x86 python3-yaml
+          sudo apt install -y qemu-utils qemu-system-x86 python3-yaml python3-pip
 
       - name: Setup sweb
         run: |
@@ -67,8 +66,7 @@ jobs:
 
       - name: Run tortillas
         run: |
-          cd ./sweb
-          python3 ../tortillas/main.py
+          python3 -m tortillas -S ./sweb
 
       - uses: actions/upload-artifact@v3
         if: always()
