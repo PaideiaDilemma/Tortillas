@@ -22,7 +22,8 @@ class QemuInterface():
     with that process.
     '''
 
-    def __init__(self, tmp_dir: str, qcow2_path: str, arch: str,
+    def __init__(self, tmp_dir: str, qcow2_path: str,
+                 arch: str = 'x86_64',
                  vmstate: str | None = None,
                  interrupts: bool = True):
         self.logger = get_logger(f'QemuInterface {tmp_dir}', prefix=True)
