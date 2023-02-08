@@ -25,7 +25,7 @@ class LogParser:
         self.config: list[ParseConfigEntry] = config
 
         self.split_by_pattern = re.compile(
-                r'\[([A-Z]+ *)\]((?s).+?(?=\[[A-Z]+ *\]|\Z))', re.DOTALL)
+                r'\[([A-Z]+ *)\](.+?(?=\[[A-Z]+ *\]|\Z))', re.DOTALL)
 
     def parse(self) -> dict[str, list[str]]:
         '''
