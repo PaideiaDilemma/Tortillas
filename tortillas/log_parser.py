@@ -27,16 +27,14 @@ class LogParser:
         self.split_by_pattern = re.compile(
                 r'\[([A-Z]+ *)\]((?s).+?(?=\[[A-Z]+ *\]|\Z))', re.DOTALL)
 
-        self.log_data: dict[str, list[str]] = {entry.name: []
-                                               for entry in self.config}
-        '''The resulting log data'''
-
-    def parse(self):
+    def parse(self) -> dict[str, list[str]]:
         '''
         Open and parse `self.log_file_path` into a dict.
         The dict is keyed by configuration entry names and its values are
         what the pattern of the configuration entry matches in group 1.
         '''
+        log_data: dict[str, list[str]] = {entry.name: []
+                                          for entry in self.config}
         self.logger.info('Parsing test output')
 
         with open(self.log_file_path, 'rb') as logfile:
@@ -54,4 +52,6 @@ class LogParser:
                     if not match:
                         continue
 
-                    self.log_data[config_entry.name].append(match.group(1))
+                    log_data[config_entry.name].append(match.group(1))
+
+        return log_data

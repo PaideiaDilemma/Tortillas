@@ -357,9 +357,8 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
         time.sleep(1)
 
     parser = LogParser(f'{test.tmp_dir}/out.log', log, config.parse)
-    parser.parse()
 
-    test.result.analyze(parser.log_data)
+    test.result.analyze(parser.parse())
 
     log.info('Done!')
     if callback:
