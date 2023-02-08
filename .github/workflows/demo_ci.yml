@@ -1,4 +1,4 @@
-name: CI
+name: Demo CI
 
 on:
   # Runs on Every Push
