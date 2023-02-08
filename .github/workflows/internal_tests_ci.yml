@@ -1,4 +1,4 @@
-name: Internal tests CI
+name: Internal tests
 
 on:
   # Runs on Every Push
@@ -23,15 +23,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt install -y qemu-utils qemu-system-x86 python3-yaml python3-pytest
+          sudo apt install -y qemu-utils qemu-system-x86 python3-yaml python3-pip
+          pip install pytest
 
-      - name: Setup sweb
-        run:
-          ./setup_sweb.sh $(pwd) $(pwd)/sweb base
-
-      - name: Run tortillas
+      - name: Setup and compile sweb
         run: |
-          python3 -m tortillas -S ./sweb
+          ./setup_sweb.sh $(pwd) $(pwd)/sweb base
+          cmake -B"/tmp/sweb" -H"./sweb"
+          cmake --build "/tmp/sweb"
 
       - name: Run tests
         run: |
