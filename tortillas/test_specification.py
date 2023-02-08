@@ -50,7 +50,7 @@ class NoTestSpecFound(Exception):
     '''Will be raised, if a test file does not contain test spec header.'''
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(init=False)
 class TestSpec():
     '''
     Test specification class.

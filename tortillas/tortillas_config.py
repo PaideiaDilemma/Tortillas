@@ -39,7 +39,7 @@ class AnalyzeConfigEntry:
     status: str = dataclasses.field(default_factory=str)
 
 
-@dataclasses.dataclass(eq=False)
+@dataclasses.dataclass(init=False, eq=False)
 class TortillasConfig:
     '''
     Tortillas configuration class.
