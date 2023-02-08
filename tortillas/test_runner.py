@@ -90,7 +90,7 @@ class TestRunner:
         test_queue = list(self.test_runs[::-1])
         running_tests: dict[str, threading.Thread] = {}
 
-        self.progress_bar.create_run_tests_counters(len(self.test_runs))
+        self.progress_bar.create_counters(len(self.test_runs))
         lock = threading.Lock()
         counters = self.progress_bar.Counter
 
@@ -104,13 +104,13 @@ class TestRunner:
                     if test_run.result.panic:
                         panic = ''.join(test_run.result.errors)
                         test_logger.info(
-                                f'Restarting test, because of {panic}')
+                            f'Restarting test, because of {panic}')
 
                     test_run.result = TestResult(repr(test_run), test_run.spec,
                                                  self.config)
 
                     self.progress_bar.update_counter(
-                            self.progress_bar.Counter.RUNNING, incr=-1)
+                        self.progress_bar.Counter.RUNNING, incr=-1)
                     test_queue.append(test_run)
 
                     return
@@ -120,7 +120,7 @@ class TestRunner:
                     counter = counters.SUCCESS
 
                 self.progress_bar.update_counter(counter,
-                                                 counters.RUNNING)
+                                                 from_counter=counters.RUNNING)
 
         def run_test(test_queue: list[TestRun]):
             '''
@@ -130,7 +130,7 @@ class TestRunner:
             with lock:
                 test = test_queue.pop()
                 self.progress_bar.update_counter(
-                        self.progress_bar.Counter.RUNNING)
+                    self.progress_bar.Counter.RUNNING)
 
                 thread = threading.Thread(target=_run, args=[
                                           test, self.architecture, self.config,
@@ -159,9 +159,9 @@ class TestRunner:
         # Testing finished
 
         self.success = not any(
-                test_run.result.status in (TestResult.Status.FAILED,
-                                           TestResult.Status.PANIC)
-                for test_run in self.test_runs)
+            test_run.result.status in (TestResult.Status.FAILED,
+                                       TestResult.Status.PANIC)
+            for test_run in self.test_runs)
 
     def create_snapshot(self):
         '''
@@ -259,7 +259,7 @@ def _create_snapshot(architecture: str, label: str, config: TortillasConfig):
             tmp_dir=tmp_dir,
             qcow2_path=snapshot_qcow2_path,
             arch=architecture
-            ) as qemu:
+    ) as qemu:
 
         if not qemu.is_alive():
             sys.exit(1)
@@ -268,12 +268,12 @@ def _create_snapshot(architecture: str, label: str, config: TortillasConfig):
 
         # Wait for the interrupt, that singals bootup completion
         res = qemu.interrupt_watchdog.wait_until(
-                int_num=INT_SYSCALL,
-                int_regs={
-                    return_reg: config.sc_tortillas_bootup
-                },
-                timeout=config.bootup_timeout_secs
-                )
+            int_num=INT_SYSCALL,
+            int_regs={
+                return_reg: config.sc_tortillas_bootup
+            },
+            timeout=config.bootup_timeout_secs
+        )
 
         if res in (InterruptWatchdog.Status.TIMEOUT,
                    InterruptWatchdog.Status.STOPPED):
@@ -320,7 +320,7 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
             qcow2_path=snapshot_path,
             arch=architecture,
             vmstate=QEMU_VMSTATE_TAG
-            ) as qemu:
+    ) as qemu:
 
         if not qemu.is_alive():
             test.result.retry = True
@@ -338,12 +338,12 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
 
         # Wait for the interrupt, that signals program completion
         res = qemu.interrupt_watchdog.wait_until(
-                int_num=INT_SYSCALL,
-                int_regs={
-                    return_reg: config.sc_tortillas_finished
-                },
-                timeout=timeout
-                )
+            int_num=INT_SYSCALL,
+            int_regs={
+                return_reg: config.sc_tortillas_finished
+            },
+            timeout=timeout
+        )
 
         if (res == InterruptWatchdog.Status.TIMEOUT
            and not test.spec.expect_timeout):

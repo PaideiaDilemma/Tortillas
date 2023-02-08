@@ -74,7 +74,7 @@ class ProgressBar:
 
         self.status_bar.update(status=status, force=True)
 
-    def create_run_tests_counters(self, total: int):
+    def create_counters(self, total: int):
         '''
         Initialize counters. `total` should be the number of test runs, that
         will be executed.
