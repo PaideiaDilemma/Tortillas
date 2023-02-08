@@ -4,7 +4,7 @@ from __future__ import annotations
 from enum import Enum
 
 from .utils import get_logger
-from .tortillas_config import TortillasConfig
+from .tortillas_config import AnalyzeConfigEntry
 from .test_specification import TestSpec
 
 
@@ -23,11 +23,11 @@ class TestResult:
         FAILED = 4
 
     def __init__(self, test_repr: str, test_spec: TestSpec,
-                 config: TortillasConfig):
+                 config: list[AnalyzeConfigEntry]):
         self.logger = get_logger(f'{test_repr} result', prefix=True)
 
         self.test_repr = test_repr
-        self.config = config.analyze
+        self.config = config
         self.expect_exit_codes = ([0] if not test_spec.expect_exit_codes
                                   else test_spec.expect_exit_codes)
 
@@ -123,8 +123,8 @@ class TestResult:
                 self.status = self.Status.FAILED
                 return
 
+        unexpected_exit_codes = False
         for exit_code in exit_codes:
-            unexpected_exit_codes = False
             try:
                 exit_code_int = int(exit_code)
             except ValueError:
@@ -137,9 +137,9 @@ class TestResult:
                 self.errors.append(f'Unexpected exit code {exit_code}')
                 unexpected_exit_codes = True
 
-            if unexpected_exit_codes:
-                expected_codes = ', '.join(str(e)
-                                           for e in self.expect_exit_codes)
-                self.errors.append(
-                        f'Expected exit code(s): {expected_codes}')
-                self._set_status(status)
+        if unexpected_exit_codes:
+            expected_codes = ', '.join(str(e)
+                                       for e in self.expect_exit_codes)
+            self.errors.append(
+                    f'Expected exit code(s): {expected_codes}')
+            self._set_status(status)

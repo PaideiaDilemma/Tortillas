@@ -32,7 +32,9 @@ class TestRun:
 
         self.logger = get_logger(repr(self), prefix=True)
 
-        self.result = TestResult(repr(self), self.spec, config)
+        self.result = TestResult(test_repr=repr(self),
+                                 test_spec=self.spec,
+                                 config=config.analyze)
 
         tmp_dir_name = repr(self).lower().replace(' ', '-')
         self.tmp_dir = rf'{TEST_RUN_DIR}/{tmp_dir_name}'
@@ -106,8 +108,9 @@ class TestRunner:
                         test_logger.info(
                             f'Restarting test, because of {panic}')
 
-                    test_run.result = TestResult(repr(test_run), test_run.spec,
-                                                 self.config)
+                    test_run.result = TestResult(test_repr=repr(test_run),
+                                                 test_spec=test_run.spec,
+                                                 config=self.config.analyze)
 
                     self.progress_bar.update_counter(
                         self.progress_bar.Counter.RUNNING, incr=-1)
