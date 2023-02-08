@@ -13,6 +13,7 @@ dependencies = ["pyyaml"]
 
 [project.optional-dependencies]
 fancy = ["enlighten"]
+dev = ["pytest"]
 
 [project.scripts]
 tortillas = "tortillas.__main__:main"
@@ -23,6 +24,10 @@ tortillas = "tortillas.__main__:main"
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+python_files = "check_*.py"
+python_classes = ""
 
 [tool.pylint.main]
 # Analyse import fallback blocks. This can be used to support both Python 2 and 3

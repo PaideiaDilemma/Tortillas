@@ -1,0 +1,314 @@
+[1;34m[SYSCALL    ][0;39mSyscall::read: m
+[1;34m[SYSCALL    ][0;39mSyscall 3 called with arguments 0(=0) 140737488355179(=0x7fffffffff6b) 1(=0x1) 0(=0) 0(=0)
+[1;34m[SYSCALL    ][0;39mSyscall::read: u
+[1;34m[SYSCALL    ][0;39mSyscall 3 called with arguments 0(=0) 140737488355179(=0x7fffffffff6b) 1(=0x1) 0(=0) 0(=0)
+[1;34m[SYSCALL    ][0;39mSyscall::read: l
+[1;34m[SYSCALL    ][0;39mSyscall 3 called with arguments 0(=0) 140737488355179(=0x7fffffffff6b) 1(=0x1) 0(=0) 0(=0)
+[1;34m[SYSCALL    ][0;39mSyscall::read: t
+[1;34m[SYSCALL    ][0;39mSyscall 3 called with arguments 0(=0) 140737488355179(=0x7fffffffff6b) 1(=0x1) 0(=0) 0(=0)
+[1;34m[SYSCALL    ][0;39mSyscall::read: .
+[1;34m[SYSCALL    ][0;39mSyscall 3 called with arguments 0(=0) 140737488355179(=0x7fffffffff6b) 1(=0x1) 0(=0) 0(=0)
+[1;34m[SYSCALL    ][0;39mSyscall::read: s
+[1;34m[SYSCALL    ][0;39mSyscall 3 called with arguments 0(=0) 140737488355179(=0x7fffffffff6b) 1(=0x1) 0(=0) 0(=0)
+[1;34m[SYSCALL    ][0;39mSyscall::read: w
+[1;34m[SYSCALL    ][0;39mSyscall 3 called with arguments 0(=0) 140737488355179(=0x7fffffffff6b) 1(=0x1) 0(=0) 0(=0)
+[1;34m[SYSCALL    ][0;39mSyscall::read: e
+[1;34m[SYSCALL    ][0;39mSyscall 3 called with arguments 0(=0) 140737488355179(=0x7fffffffff6b) 1(=0x1) 0(=0) 0(=0)
+[1;34m[SYSCALL    ][0;39mSyscall::read: b
+[1;34m[SYSCALL    ][0;39mSyscall 3 called with arguments 0(=0) 140737488355179(=0x7fffffffff6b) 1(=0x1) 0(=0) 0(=0)
+[1;34m[SYSCALL    ][0;39mSyscall::read: 
+
+[1;34m[SYSCALL    ][0;39mSyscall 191 called with arguments 134246944(=0x8007220) 1(=0x1) 0(=0) 0(=0) 0(=0)
+[1;34m[SYSCALL    ][0;39mSyscall::createprocess: path:/usr/mult.sweb sleep:1
+[1;33m[VFS        ][0;39mgetVfsMount> mnt->getMountPoint()->getName() : /
+[1;33m[VFS        ][0;39mgetVfsMount> mnt->getMountPoint()->getName() : usr
+[1;33m[VFS        ][0;39mgetVfsMount> mnt->getMountPoint()->getName() : /
+[1;33m[VFS        ][0;39mgetVfsMount> mnt->getMountPoint()->getName() : usr
+[1;33m[VFS        ][0;39mgetVfsMount> mnt->getMountPoint()->getName() : dev
+[1;33m[PROCESS_REG][0;39mcreate process /usr/mult.sweb
+[1;35m[THREAD     ][0;39mThread ctor, this is 0xffffffff801b9bf8, stack is 0xffffffff801b9c00, fs_info ptr: 0xffffffff801b1d20
+[1;33m[VFS        ][0;39mgetVfsMount> mnt->getMountPoint()->getName() : /
+[1;33m[VFS        ][0;39mgetVfsMount> mnt->getMountPoint()->getName() : usr
+[1;33m[VFS        ][0;39mgetVfsMount> mnt->getMountPoint()->getName() : /
+[1;33m[VFS        ][0;39mgetVfsMount> mnt->getMountPoint()->getName() : usr
+[1;33m[VFS        ][0;39mgetVfsMount> mnt->getMountPoint()->getName() : dev
+[1;37m[LOADER     ][0;39mLoader::loadExecutableAndInitProcess: going to load an executable
+[1;37m[LOADER     ][0;39mloadExecutableAndInitProcess: Entry: 0x80007b9, num Sections 0x7
+[1;31m[USERTRACE  ][0;39mloadDebugInfoIfAvailable start
+[1;31m[USERTRACE  ][0;39mFound SWEBDbg Infos
+[1;31m[USERTRACE  ][0;39mfound 90 sweb debug functions
+[1;36m[USERPROCESS][0;39mctor: Done loading /usr/mult.sweb
+[1;33m[PROCESS_REG][0;39mcreated userprocess /usr/mult.sweb
+[1;33m[SCHEDULER  ][0;39maddNewThread: 0xffffffff801b9bf8  0:/usr/mult.sweb
+KernelThread:   ffffffff801af2a8, info:   ffffffff801b1458 -- rax: 0xffffffff801b0970  rbx: 0xffffffff80124fe0  rcx:              0x323  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801b08b0  rbp: 0xffffffff801b0908  rsp0                  0 -- rip: 0xffffffff8012bc8a  rflg:              0x202  cr3: 0x3f0000
+  UserThread:   ffffffff801af2a8, info:   ffffffff801b1b98 -- rax:               0xbf  rbx:          0x8007220  rcx:                0x1  rdx:                  0 -- rsp:     0x7fffffffff58  rbp:     0x7fffffffff60  rsp0 0xffffffff801b12ac -- rip:          0x80007d6  rflg:              0x202  cr3: 0x3f0000
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx:                  0  rcx:                  0  rdx:                  0 -- rsp: 0xffffffff801bbbfc  rbp: 0xffffffff801bbbfc  rsp0                  0 -- rip:                  0  rflg:              0x200  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:                  0  rbx:                  0  rcx:                  0  rdx:                  0 -- rsp:     0x7ffffffffff8  rbp:     0x7ffffffffff8  rsp0 0xffffffff801bbbfc -- rip:          0x80007b9  rflg:              0x200  cr3: 0x3ff000
+[1;33m[PROCESS_REG][0;39madded thread /usr/mult.sweb
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x80007b9 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, reading, instruction-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx:                  0  rcx:                  0  rdx:                  0 -- rsp: 0xffffffff801bbbfc  rbp: 0xffffffff801bbbfc  rsp0                  0 -- rip:                  0  rflg:              0x200  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:                  0  rbx:                  0  rcx:                  0  rdx:                  0 -- rsp:     0x7ffffffffff8  rbp:     0x7ffffffffff8  rsp0 0xffffffff801bbbfc -- rip:          0x80007b9  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x80007b9.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x80007b9 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x80007b9.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8005008 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, reading,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax: 0xffffffff801bb408  rbx: 0xffffffff80124fe0  rcx:              0x2ea  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb348  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff8012bc8a  rflg:              0x202  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:                  0  rbx:                  0  rcx:                  0  rdx:                  0 -- rsp:     0x7fffffffffc0  rbp:     0x7fffffffffc0  rsp0 0xffffffff801bbbfc -- rip:          0x8000004  rflg:              0x293  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8005008.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8005008 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8005008.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x800ed60 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx: 0xffffffff80124fe0  rcx:              0x88c  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb350  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff80125659  rflg:              0x292  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x800ed60  rbx:                  0  rcx:            0x10421  rdx:                  0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000113  rflg:              0x246  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x800ed60.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x800ed60 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x800ed60.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x800f000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx: 0xffffffff80124fe0  rcx:              0x88c  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb350  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff80125659  rflg:              0x292  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x800ed60  rbx:                  0  rcx:            0x1523f  rdx:              0x2a0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000113  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x800f000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x800f000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x800f000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8006000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx: 0xffffffff80124fe0  rcx:              0x88c  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb350  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff80125659  rflg:              0x292  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x8005120  rbx:                  0  rcx:            0x16048  rdx:              0xee0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x80000cd  rflg:              0x206  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8006000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8006000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8006000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8010000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx: 0xffffffff80124fe0  rcx:              0x88c  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb350  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff80125659  rflg:              0x292  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x800ed60  rbx:                  0  rcx:             0xad3e  rdx:             0x12a0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000113  rflg:              0x212  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8010000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8010000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8010000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8007000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx: 0xffffffff80124fe0  rcx:              0x88c  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb350  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff80125659  rflg:              0x292  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x8005120  rbx:                  0  rcx:               0x11  rdx:             0x1ee0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x80000cd  rflg:              0x216  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8007000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8007000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8007000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8011000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx: 0xffffffff80124fe0  rcx:              0x88c  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb350  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff80125659  rflg:              0x292  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x800ed60  rbx:                  0  rcx:            0x13df5  rdx:             0x22a0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000113  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8011000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8011000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8011000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8008000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx: 0xffffffff80124fe0  rcx:              0x88c  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb350  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff80125659  rflg:              0x292  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x8005120  rbx:                  0  rcx:             0x49b8  rdx:             0x2ee0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x80000cd  rflg:              0x206  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8008000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8008000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8008000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8012000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx: 0xffffffff80124fe0  rcx:              0x88c  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb350  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff80125659  rflg:              0x292  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x800ed60  rbx:                  0  rcx:             0x8ddd  rdx:             0x32a0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000113  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8012000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8012000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8012000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8009000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx: 0xffffffff80124fe0  rcx:              0x88c  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb350  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff80125659  rflg:              0x292  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x8005120  rbx:                  0  rcx:             0xf293  rdx:             0x3ee0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x80000cd  rflg:              0x206  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8009000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8009000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8009000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8013000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx: 0xffffffff80124fe0  rcx:              0x88c  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb350  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff80125659  rflg:              0x292  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x800ed60  rbx:                  0  rcx:             0x230e  rdx:             0x42a0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000113  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8013000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8013000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8013000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x800a000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx: 0xffffffff80124fe0  rcx:              0x88c  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb350  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff80125659  rflg:              0x292  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x8005120  rbx:                  0  rcx:            0x14742  rdx:             0x4ee0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x80000cd  rflg:              0x206  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x800a000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x800a000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x800a000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8014000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:                  0  rbx: 0xffffffff80124fe0  rcx:              0x88c  rdx: 0xffffffff8019a3f8 -- rsp: 0xffffffff801bb350  rbp: 0xffffffff801bb3a0  rsp0                  0 -- rip: 0xffffffff80125659  rflg:              0x292  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x800ed60  rbx:                  0  rcx:             0xedf7  rdx:             0x52a0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000113  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8014000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8014000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8014000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x800b000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x20  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x8005120  rbx:                  0  rcx:             0x1931  rdx:             0x5ee0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x80000cd  rflg:              0x206  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x800b000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x800b000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x800b000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8015000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x20  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x800ed60  rbx:                  0  rcx:             0x1dd6  rdx:             0x62a0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000113  rflg:              0x212  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8015000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8015000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8015000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x800c000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x20  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x8005120  rbx:                  0  rcx:            0x1856d  rdx:             0x6ee0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x80000cd  rflg:              0x206  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x800c000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x800c000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x800c000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8016000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x20  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x800ed60  rbx:                  0  rcx:             0xa099  rdx:             0x72a0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000113  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8016000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8016000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8016000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x800d000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x20  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x8005120  rbx:                  0  rcx:            0x13406  rdx:             0x7ee0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x80000cd  rflg:              0x206  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x800d000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x800d000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x800d000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8017000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x20  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x800ed60  rbx:                  0  rcx:             0x3cc8  rdx:             0x82a0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000113  rflg:              0x212  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8017000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8017000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8017000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8018000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x20  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x800ed60  rbx:                  0  rcx:             0x59ae  rdx:             0x92a0 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000113  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8018000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8018000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8018000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8019000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x20  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x80189a0  rbx:                  0  rcx:                0x8  rdx:              0x660 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000181  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8019000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8019000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8019000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x801a000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x20  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x80189a0  rbx:                  0  rcx:               0x20  rdx:             0x1660 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000181  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x801a000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x801a000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x801a000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x801b000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x20  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x80189a0  rbx:                  0  rcx:               0x38  rdx:             0x2660 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000181  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x801b000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x801b000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x801b000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x801c000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x66  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x80189a0  rbx:                  0  rcx:               0x50  rdx:             0x3660 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000181  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x801c000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x801c000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x801c000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x801d000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x66  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x80189a0  rbx:                  0  rcx:                0x4  rdx:             0x4660 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000181  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x801d000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x801d000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x801d000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x801e000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x66  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x80189a0  rbx:                  0  rcx:               0x1c  rdx:             0x5660 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000181  rflg:              0x212  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x801e000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x801e000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x801e000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x801f000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x66  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x80189a0  rbx:                  0  rcx:               0x34  rdx:             0x6660 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000181  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x801f000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x801f000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x801f000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8020000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x66  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x80189a0  rbx:                  0  rcx:               0x4c  rdx:             0x7660 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000181  rflg:              0x212  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8020000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8020000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8020000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8021000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x66  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x80189a0  rbx:                  0  rcx:                  0  rdx:             0x8660 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000181  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8021000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8021000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8021000.
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8022000 - Thread 0: /usr/mult.sweb (0xffffffff801b9bf8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, writing,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801b9bf8, info:   ffffffff801b1e60 -- rax:               0x66  rbx:           0x3ff000  rcx: 0xffffffff8010509d  rdx:               0xe9 -- rsp: 0xffffffff801bb7c8  rbp: 0xffffffff801bb7d0  rsp0                  0 -- rip: 0xffffffff8011568f  rflg:              0x282  cr3: 0x3ff000
+  UserThread:   ffffffff801b9bf8, info:   ffffffff801bbcd0 -- rax:          0x80189a0  rbx:                  0  rcx:               0x18  rdx:             0x9660 -- rsp:     0x7fffffffffd0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801bbbfc -- rip:          0x8000181  rflg:              0x202  cr3: 0x3ff000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8022000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8022000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8022000.
+[1;34m[SYSCALL    ][0;39mSyscall 1 called with arguments 1237619379(=0x49c492b3) 0(=0) 0(=0) 0(=0) 0(=0)
+[1;34m[SYSCALL    ][0;39mSyscall::EXIT: called, exit_code: 1237619379
+[1;35m[THREAD     ][0;39mkill: Called by </usr/mult.sweb (0xffffffff801b9bf8)>. Preparing Thread </usr/mult.sweb (0xffffffff801b9bf8)> for destruction
+[1;35m[THREAD     ][0;39m~Thread: freeing ThreadInfos
+[1;35m[THREAD     ][0;39m~Thread: done (/usr/mult.sweb)
+[1;33m[SCHEDULER  ][0;39mcleanupDeadThreads: done
+[1;34m[SYSCALL    ][0;39mSyscall 42069 called with arguments 0(=0) 0(=0) 0(=0) 0(=0) 0(=0)
+
+[1;32m[PAGEFAULT  ][0;39mAddress:          0x8006000 - Thread 0: /usr/shell.sweb (0xffffffff801af2a8)
+[1;32m[PAGEFAULT  ][0;39mFlags: not present,   user-mode, reading,     operand-fetch, switch to userspace: 1
+KernelThread:   ffffffff801af2a8, info:   ffffffff801b1458 -- rax:              0x200  rbx:          0x8007220  rcx: 0xffffffff801b1078  rdx:                  0 -- rsp: 0xffffffff801b1118  rbp: 0xffffffff801b1118  rsp0                  0 -- rip: 0xffffffff80115fcc  rflg:              0x246  cr3: 0x3f0000
+  UserThread:   ffffffff801af2a8, info:   ffffffff801b1b98 -- rax:                  0  rbx:                  0  rcx:                  0  rdx:                  0 -- rsp:     0x7fffffffffc0  rbp:     0x7fffffffffe0  rsp0 0xffffffff801b12ac -- rip:          0x8000786  rflg:              0x212  cr3: 0x3f0000
+[1;37m[LOADER     ][0;39mLoader:loadPage: Request to load the page for address 0x8006000.
+[1;37m[LOADER     ][0;39mLoader::loadPage: Load request for address 0x8006000 has been successfully finished.
+[1;32m[PAGEFAULT  ][0;39mPage fault handling finished for Address:          0x8006000.
+[1;34m[SYSCALL    ][0;39mSyscall 4 called with arguments 1(=0x1) 140737488354640(=0x7ffffffffd50) 10(=0xa) 0(=0) 0(=0)
+[1;34m[SYSCALL    ][0;39mSyscall::write: 
+SWEB: /> 
+[1;34m[SYSCALL    ][0;39mSyscall 3 called with arguments 0(=0) 140737488355179(=0x7fffffffff6b) 1(=0x1) 0(=0) 0(=0)

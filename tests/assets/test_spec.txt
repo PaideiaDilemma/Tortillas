@@ -1,0 +1,6 @@
+/*
+# Test specification
+category: base
+description: "multiplies some numbers"
+expect_exit_codes: [1237619379]
+*/
