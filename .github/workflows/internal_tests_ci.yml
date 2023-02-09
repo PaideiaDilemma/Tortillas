@@ -35,10 +35,10 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -s >> $GITHUB_STEP_SUMMARY
+          pytest -s | tee $GITHUB_STEP_SUMMARY
 
       - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: test_logs
-          path: /tmp/sweb/tortillas/**/out.log
+          path: /tmp/sweb/**/out.log
