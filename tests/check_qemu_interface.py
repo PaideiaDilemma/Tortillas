@@ -3,18 +3,18 @@ import subprocess
 from tortillas.qemu_interface import QemuInterface, InterruptWatchdog
 
 
-def _setup():
+def _setup(directory: str):
     assert os.path.exists('/tmp/sweb/SWEB.qcow2')  # Compile sweb??
-    if not os.path.exists('/tmp/sweb/test'):
-        os.mkdir('/tmp/sweb/test')
+    if not os.path.exists(f'/tmp/sweb/{directory}'):
+        os.mkdir(f'/tmp/sweb/{directory}')
     else:
-        subprocess.run('rm /tmp/sweb/test/*', shell=True)
+        subprocess.run(f'rm /tmp/sweb/{directory}/*', shell=True)
 
 
 def test_waiting_for_bootup():
-    _setup()
+    _setup('test1')
 
-    with QemuInterface(tmp_dir='/tmp/sweb/test',
+    with QemuInterface(tmp_dir='/tmp/sweb/test1',
                        qcow2_path='/tmp/sweb/SWEB.qcow2') as qemu:
 
         res = qemu.interrupt_watchdog.wait_until(int_num=80,
@@ -28,9 +28,9 @@ def test_waiting_for_bootup():
 
 
 def test_timeout():
-    _setup()
+    _setup('test2')
 
-    with QemuInterface(tmp_dir='/tmp/sweb/test',
+    with QemuInterface(tmp_dir='/tmp/sweb/test2',
                        qcow2_path='/tmp/sweb/SWEB.qcow2') as qemu:
 
         res = qemu.interrupt_watchdog.wait_until(int_num=80,
@@ -43,9 +43,9 @@ def test_timeout():
 
 
 def test_run_mult():
-    _setup()
+    _setup('test3')
 
-    with QemuInterface(tmp_dir='/tmp/sweb/test',
+    with QemuInterface(tmp_dir='/tmp/sweb/test3',
                        qcow2_path='/tmp/sweb/SWEB.qcow2') as qemu:
 
         res = qemu.interrupt_watchdog.wait_until(int_num=80,
