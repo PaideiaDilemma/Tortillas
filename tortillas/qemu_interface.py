@@ -97,14 +97,16 @@ class QemuInterface():
     def _popen_qemu(self) -> subprocess.Popen:
         if self.arch in ('x86_64', 'x86/64'):
             cmd = (f'qemu-system-x86_64 -m 8M -cpu qemu64 '
-                   f'-drive file={self.qcow2_path},index=0,media=disk '
+                   f'-drive file={self.qcow2_path},'
+                   'index=0,media=disk,cache=writethrough '
                    f'-debugcon file:{self.log_file} '
                    f'-monitor pipe:{self.fifos} '
                    '-nographic -display none -serial /dev/null')
 
         elif self.arch in ('x86_32', 'x86/32'):
             cmd = (f'qemu-system-i386 -m 8M -cpu qemu32 '
-                   f'-drive file={self.qcow2_path},index=0,media=disk '
+                   f'-drive file={self.qcow2_path},'
+                   'index=0,media=disk,cache=writethrough '
                    f'-debugcon file:{self.log_file} '
                    f'-monitor pipe:{self.fifos} '
                    '-nographic -display none -serial /dev/null')
