@@ -35,6 +35,7 @@ jobs:
 
       - name: Run tests
         run: |
+          set -o pipefail
           pytest -s | tee $GITHUB_STEP_SUMMARY
 
       - uses: actions/upload-artifact@v3

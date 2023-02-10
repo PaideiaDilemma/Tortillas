@@ -1,0 +1,35 @@
+diff --git a/common/include/console/debug.h b/common/include/console/debug.h
+index df50d37b..1f03d7ed 100644
+--- a/common/include/console/debug.h
++++ b/common/include/console/debug.h
+@@ -31,8 +31,8 @@ enum AnsiColor
+ 
+ 
+ //group Block Device
+-const size_t BD_MANAGER         = Ansi_Yellow;
+-const size_t BD_VIRT_DEVICE     = Ansi_Yellow;
++const size_t BD_MANAGER         = Ansi_Yellow   | OUTPUT_ENABLED;
++const size_t BD_VIRT_DEVICE     = Ansi_Yellow   | OUTPUT_ENABLED;
+ 
+ //group Console
+ const size_t KPRINTF            = Ansi_Yellow;
+@@ -57,8 +57,8 @@ const size_t KMM                = Ansi_Yellow;
+ 
+ //group driver
+ const size_t DRIVER             = Ansi_Yellow;
+-const size_t ATA_DRIVER         = Ansi_Yellow;
+-const size_t IDE_DRIVER         = Ansi_Yellow;
++const size_t ATA_DRIVER         = Ansi_Yellow | OUTPUT_ENABLED;
++const size_t IDE_DRIVER         = Ansi_Yellow | OUTPUT_ENABLED;
+ const size_t MMC_DRIVER         = Ansi_Yellow;
+ 
+ //group arch
+@@ -74,7 +74,7 @@ const size_t FS                 = Ansi_Yellow;
+ const size_t RAMFS              = Ansi_White;
+ const size_t DENTRY             = Ansi_Blue;
+ const size_t INODE              = Ansi_Blue;
+-const size_t PATHWALKER         = Ansi_Yellow;
++const size_t PATHWALKER         = Ansi_Yellow | OUTPUT_ENABLED;
+ const size_t PSEUDOFS           = Ansi_Yellow;
+ const size_t VFSSYSCALL         = Ansi_Yellow;
+ const size_t VFS                = Ansi_Yellow | OUTPUT_ENABLED;
