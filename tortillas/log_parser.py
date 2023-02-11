@@ -24,8 +24,23 @@ class LogParser:
 
         self.config: list[ParseConfigEntry] = config
 
-        self.split_by_pattern = re.compile(
-                r'\[([A-Z]+ *)\](.+?(?=\[[A-Z]+ *\]|\Z))', re.DOTALL)
+        self.split_by_pattern = re.compile(r'''
+            # Debug: https://regex101.com/r/UiFMcy/3
+            (                       # Match the 'scope' of the log message
+                \[[A-Z_]+\s*\]          # Log identifier. e.g [SYSCALL  ]
+            |                           # or
+                KERNEL\sPANIC:\s        # KERNEL PANIC:
+            )
+            (.+?                    # Lazy match everthing until
+                (?=
+                    \[[A-Z_]+\s*\]      # Next log identifier
+                |                       # or
+                    KERNEL\sPANIC       # KERNEL PANIC
+                |                       # or
+                    \Z                  # EOF
+                )
+            )
+        ''', re.DOTALL | re.VERBOSE)
 
     def parse(self) -> dict[str, list[str]]:
         '''
@@ -40,7 +55,8 @@ class LogParser:
         with open(self.log_file_path, 'rb') as logfile:
             escaped_logs = escape_ansi(logfile.read()).decode()
             for match in self.split_by_pattern.finditer(escaped_logs):
-                debug_log_type = match.group(1).strip()
+                debug_log_type = match.group(1) .strip('[]: ')
+
                 message = match.group(2)
 
                 for config_entry in self.config:
@@ -48,10 +64,10 @@ class LogParser:
                     if config_entry.scope not in ('ALL', debug_log_type):
                         continue
 
-                    match = config_entry.pattern_compiled.search(message)
-                    if not match:
+                    scope_match = config_entry.pattern_compiled.search(message)
+                    if not scope_match:
                         continue
 
-                    log_data[config_entry.name].append(match.group(1))
+                    log_data[config_entry.name].append(scope_match.group(1))
 
         return log_data
