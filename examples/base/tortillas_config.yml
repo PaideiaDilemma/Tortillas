@@ -9,11 +9,15 @@ sc_tortillas_finished: 42069
 parse:
 
   - name: kernel_panics
-    scope: 'ALL'
-    pattern: '(KERNEL PANIC:.*)'
+    scope: 'KERNEL PANIC'
+    pattern: '(.*)'
 
   - name: backtrace
     scope: 'BACKTRACE'
+    pattern: '(.*)'
+
+  - name: lock_logs
+    scope: 'LOCK'
     pattern: '(.*)'
 
   - name: command_not_understood
@@ -30,6 +34,9 @@ parse:
 
 
 analyze:
+
+  - name: lock_logs
+    mode: add_as_error
 
   - name: kernel_panics
     mode: add_as_error
