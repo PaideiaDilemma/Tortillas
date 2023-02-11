@@ -25,6 +25,7 @@ class LogParser:
         self.config: list[ParseConfigEntry] = config
 
         self.split_by_pattern = re.compile(r'''
+            # Debug: https://regex101.com/r/UiFMcy/3
             (                       # Match the 'scope' of the log message
                 \[[A-Z_]+\s*\]          # Log identifier. e.g [SYSCALL  ]
             |                           # or
