@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 '''Parse arguments, make a qemu snapshot of SWEB and run applicable tests.'''
 
 from __future__ import annotations
