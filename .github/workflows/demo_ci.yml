@@ -1,11 +1,12 @@
 name: Demo
 
 on:
-  # Runs on Every Push
   push:
-  # Runs on Pull Requests
+    branches:
+      - main
   pull_request:
-  workflow_dispatch:
+    branches:
+      - main
 
 jobs:
   minimal-example:
