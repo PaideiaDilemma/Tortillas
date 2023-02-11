@@ -11,6 +11,7 @@ import sys
 import time
 import shlex
 import subprocess
+from logging import Logger
 from enum import Enum
 
 from .utils import get_logger
@@ -24,9 +25,11 @@ class QemuInterface():
 
     def __init__(self, tmp_dir: str, qcow2_path: str, *,
                  arch: str = 'x86_64',
+                 logger: Logger | None = None,
                  vmstate: str | None = None,
                  interrupts: bool = True):
-        self.logger = get_logger(f'QemuInterface {tmp_dir}', prefix=True)
+        self.logger = (logger if logger
+                       else get_logger(f'QemuInterface {tmp_dir}'))
 
         self.qcow2_path = qcow2_path
         self.tmp_dir = tmp_dir

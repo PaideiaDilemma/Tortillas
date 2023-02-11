@@ -261,7 +261,8 @@ def _create_snapshot(architecture: str, label: str, config: TortillasConfig):
     with QemuInterface(
             tmp_dir=tmp_dir,
             qcow2_path=snapshot_qcow2_path,
-            arch=architecture
+            arch=architecture,
+            logger=log
     ) as qemu:
 
         if not qemu.is_alive():
@@ -322,6 +323,7 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
             tmp_dir=tmp_dir,
             qcow2_path=snapshot_path,
             arch=architecture,
+            logger=log,
             vmstate=QEMU_VMSTATE_TAG
     ) as qemu:
 
