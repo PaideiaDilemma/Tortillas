@@ -24,7 +24,7 @@ def _build_sweb(src_directory: str, setup: bool, architecture: str):
 
         os.system(cmd)
 
-    if os.system(f'cmake --build {SWEB_BUILD_DIR}') != 0:
+    if os.system(f'cmake --build {SWEB_BUILD_DIR} -j4') != 0:
         sys.exit(1)
     print()
 

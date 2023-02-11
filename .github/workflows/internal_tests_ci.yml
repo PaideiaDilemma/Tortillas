@@ -31,7 +31,7 @@ jobs:
         run: |
           ./setup_sweb.sh $(pwd) $(pwd)/sweb base
           cmake -B"/tmp/sweb" -H"./sweb"
-          cmake --build "/tmp/sweb"
+          cmake --build "/tmp/sweb" -j4
 
       - name: Run tests
         run: |
