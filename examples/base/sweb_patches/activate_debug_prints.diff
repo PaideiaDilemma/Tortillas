@@ -1,5 +1,5 @@
 diff --git a/common/include/console/debug.h b/common/include/console/debug.h
-index df50d37b..1f03d7ed 100644
+index df50d37b..d019cfa0 100644
 --- a/common/include/console/debug.h
 +++ b/common/include/console/debug.h
 @@ -31,8 +31,8 @@ enum AnsiColor
@@ -13,23 +13,49 @@ index df50d37b..1f03d7ed 100644
  
  //group Console
  const size_t KPRINTF            = Ansi_Yellow;
-@@ -57,8 +57,8 @@ const size_t KMM                = Ansi_Yellow;
+@@ -56,9 +56,9 @@ const size_t CPU_ERROR          = Ansi_Red   | OUTPUT_ENABLED;
+ const size_t KMM                = Ansi_Yellow;
  
  //group driver
- const size_t DRIVER             = Ansi_Yellow;
+-const size_t DRIVER             = Ansi_Yellow;
 -const size_t ATA_DRIVER         = Ansi_Yellow;
 -const size_t IDE_DRIVER         = Ansi_Yellow;
++const size_t DRIVER             = Ansi_Yellow | OUTPUT_ENABLED;
 +const size_t ATA_DRIVER         = Ansi_Yellow | OUTPUT_ENABLED;
 +const size_t IDE_DRIVER         = Ansi_Yellow | OUTPUT_ENABLED;
  const size_t MMC_DRIVER         = Ansi_Yellow;
  
  //group arch
-@@ -74,7 +74,7 @@ const size_t FS                 = Ansi_Yellow;
- const size_t RAMFS              = Ansi_White;
- const size_t DENTRY             = Ansi_Blue;
- const size_t INODE              = Ansi_Blue;
+@@ -70,19 +70,19 @@ const size_t A_KB_MANAGER       = Ansi_Yellow;
+ const size_t A_INTERRUPTS       = Ansi_Yellow;
+ 
+ //group file system
+-const size_t FS                 = Ansi_Yellow;
+-const size_t RAMFS              = Ansi_White;
+-const size_t DENTRY             = Ansi_Blue;
+-const size_t INODE              = Ansi_Blue;
 -const size_t PATHWALKER         = Ansi_Yellow;
+-const size_t PSEUDOFS           = Ansi_Yellow;
+-const size_t VFSSYSCALL         = Ansi_Yellow;
++const size_t FS                 = Ansi_Yellow | OUTPUT_ENABLED;
++const size_t RAMFS              = Ansi_White | OUTPUT_ENABLED;
++const size_t DENTRY             = Ansi_Blue | OUTPUT_ENABLED;
++const size_t INODE              = Ansi_Blue | OUTPUT_ENABLED;
 +const size_t PATHWALKER         = Ansi_Yellow | OUTPUT_ENABLED;
- const size_t PSEUDOFS           = Ansi_Yellow;
- const size_t VFSSYSCALL         = Ansi_Yellow;
++const size_t PSEUDOFS           = Ansi_Yellow | OUTPUT_ENABLED;
++const size_t VFSSYSCALL         = Ansi_Yellow | OUTPUT_ENABLED;
  const size_t VFS                = Ansi_Yellow | OUTPUT_ENABLED;
+-const size_t VFS_FILE           = Ansi_Yellow;
+-const size_t SUPERBLOCK         = Ansi_Yellow;
++const size_t VFS_FILE           = Ansi_Yellow | OUTPUT_ENABLED;
++const size_t SUPERBLOCK         = Ansi_Yellow | OUTPUT_ENABLED;
+ 
+ //group minix
+-const size_t M_STORAGE_MANAGER  = Ansi_Yellow;
+-const size_t M_INODE            = Ansi_Yellow;
+-const size_t M_SB               = Ansi_Yellow;
+-const size_t M_ZONE             = Ansi_Yellow;
++const size_t M_STORAGE_MANAGER  = Ansi_Yellow | OUTPUT_ENABLED;
++const size_t M_INODE            = Ansi_Yellow | OUTPUT_ENABLED;
++const size_t M_SB               = Ansi_Yellow | OUTPUT_ENABLED;
++const size_t M_ZONE             = Ansi_Yellow | OUTPUT_ENABLED;
