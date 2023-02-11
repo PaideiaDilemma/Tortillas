@@ -22,24 +22,32 @@ class QemuInterface():
     with that process.
     '''
 
-    def __init__(self, tmp_dir: str, qcow2_path: str,
+    def __init__(self, tmp_dir: str, qcow2_path: str, *,
                  arch: str = 'x86_64',
                  vmstate: str | None = None,
                  interrupts: bool = True):
         self.logger = get_logger(f'QemuInterface {tmp_dir}', prefix=True)
 
+        self.qcow2_path = qcow2_path
+        self.tmp_dir = tmp_dir
+
         self.arch = arch
         self.vmstate = vmstate
         self.interrupts = interrupts
 
-        self.qcow2_path = qcow2_path
-        self.tmp_dir = tmp_dir
-        self.fifos = f'{tmp_dir}/qemu'
-        self.log_file = f'{tmp_dir}/out.log'
-
         self.interrupt_watchdog: InterruptWatchdog
         self.process: subprocess.Popen
         self.input: TextIO
+
+    @property
+    def fifos(self):
+        '''Fifo path exluding .in and .out'''
+        return f'{self.tmp_dir}/qemu'
+
+    @property
+    def log_file(self):
+        '''Log file path'''
+        return f'{self.tmp_dir}/out.log'
 
     def __enter__(self):
         self.logger.debug('Creating pipes for qemu IO')
