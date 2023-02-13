@@ -1,12 +1,12 @@
 diff --git a/arch/x86/common/source/IDEDriver.cpp b/arch/x86/common/source/IDEDriver.cpp
-index 2bf134a4..9eeb51ad 100644
+index 2bf134a4..1e2ab244 100644
 --- a/arch/x86/common/source/IDEDriver.cpp
 +++ b/arch/x86/common/source/IDEDriver.cpp
 @@ -88,10 +88,12 @@ uint32 IDEDriver::doDeviceDetection()
        else
        {
          outportbp(base_port + 6, (cs % 2 == 0 ? 0xA0 : 0xB0));
-+        outportb(0x80, 0x00);
++        while(inportbp(base_port + 7) & 0x80);
  
          uint8 c1 = inportbp(base_port + 2);
          uint8 c2 = inportbp(base_port + 3);
