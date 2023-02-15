@@ -35,4 +35,5 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest
+          set -o pipefail
+          pytest -s | tee $GITHUB_STEP_SUMMARY
