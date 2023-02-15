@@ -37,10 +37,12 @@ def test_parsing_int_splitting():
 
 def test_mutliple_config_entries():
     config = [
-            ParseConfigEntry('a', 'SYSCALL', '(.*)'),
-            ParseConfigEntry('b', 'THREAD', '(kill: (.*))'),
-            ParseConfigEntry('c', 'PAGEFAULT',
-                             r'(Address:\s+0x[0-9a-fA-F]+)')]
+            ParseConfigEntry(label='a', scope='SYSCALL',
+                             pattern='(.*)'),
+            ParseConfigEntry(label='b', scope='THREAD',
+                             pattern='(kill: (.*))'),
+            ParseConfigEntry(label='c', scope='PAGEFAULT',
+                             pattern=r'(Address:\s+0x[0-9a-fA-F]+)')]
 
     for entry in config:
         entry.compile_pattern()

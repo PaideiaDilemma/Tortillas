@@ -8,7 +8,7 @@ from tortillas.test_result import TestResult
 
 
 def _get_log_data():
-    config_entry = ParseConfigEntry(name='test',
+    config_entry = ParseConfigEntry(label='test',
                                     scope='SYSCALL',
                                     pattern=r'(.*)').compile_pattern()
 
