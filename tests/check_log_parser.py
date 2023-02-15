@@ -4,7 +4,7 @@ from tortillas.tortillas_config import ParseConfigEntry
 
 
 def test_log_splitting():
-    config_entry = ParseConfigEntry(name='test',
+    config_entry = ParseConfigEntry(label='test',
                                     scope='SYSCALL',
                                     pattern=r'(.*)').compile_pattern()
 
@@ -14,13 +14,13 @@ def test_log_splitting():
 
     log_data = log_parser.parse()
 
-    assert config_entry.name in log_data
+    assert config_entry.label in log_data
     assert ('Syscall::EXIT: called, exit_code: 1237619379\n'
-            in log_data[config_entry.name])
+            in log_data[config_entry.label])
 
 
 def test_parsing_int_splitting():
-    config_entry = ParseConfigEntry(name='test',
+    config_entry = ParseConfigEntry(label='test',
                                     scope='SYSCALL',
                                     pattern=r'exit_code: (\d+)')
     config_entry.compile_pattern()
@@ -31,8 +31,8 @@ def test_parsing_int_splitting():
 
     log_data = log_parser.parse()
 
-    assert config_entry.name in log_data
-    assert '1237619379' in log_data[config_entry.name]
+    assert config_entry.label in log_data
+    assert '1237619379' in log_data[config_entry.label]
 
 
 def test_mutliple_config_entries():
@@ -52,7 +52,7 @@ def test_mutliple_config_entries():
     log_data = log_parser.parse()
 
     for entry in config:
-        assert entry.name in log_data.keys()
+        assert entry.label in log_data.keys()
 
     assert any('kill' in log for log in log_data['b'])
     assert 'Address:          0x8006000' in log_data['c']

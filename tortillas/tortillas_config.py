@@ -16,9 +16,9 @@ class ParseConfigEntry:
     Configuration of the log_parser.
     '''
 
-    name: str
     scope: str
     pattern: str
+    label: str
 
     pattern_compiled: re.Pattern | None = None
 
@@ -34,7 +34,7 @@ class AnalyzeConfigEntry:
     Configuration for analyzing log data.
     '''
 
-    name: str
+    label: str
     mode: str
     status: str = dataclasses.field(default_factory=str)
 
@@ -48,7 +48,7 @@ class TortillasConfig:
     parse the tortillas config file.
 
     To add an option, add a member to this class.
-    If it has no default value, it will be required, otherwise optional.
+    If it has a default value, you make it optional.
     '''
 
     threads: int
@@ -73,6 +73,8 @@ class TortillasConfig:
                 self.logger.error(exc)
                 sys.exit(1)
 
+            # This is manually setting all the attributes, to be able to
+            # handle optional fields and construct ConfigEntry objects
             for field in dataclasses.fields(self):
                 if field.name not in config.keys():
                     if field.default is not dataclasses.MISSING:

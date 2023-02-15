@@ -26,7 +26,7 @@ def _get_test_spec():
 def test_analzye_add_as_error():
     log_data = _get_log_data()
 
-    config_entry = AnalyzeConfigEntry(name='test',
+    config_entry = AnalyzeConfigEntry(label='test',
                                       mode='add_as_error',
                                       status='PANIC')
 
@@ -43,7 +43,7 @@ def test_analzye_add_as_error():
 def test_analzye_exit_codes():
     log_data = {'test': ['1', '2', '3', '4']}
 
-    config_entry = AnalyzeConfigEntry(name='test',
+    config_entry = AnalyzeConfigEntry(label='test',
                                       mode='exit_codes',
                                       status='FAILED')
 
@@ -64,7 +64,7 @@ def test_expect_stdout():
     log_data = {'stdout': ['A'],
                 'expect': ['A', 'B']}
 
-    config_entry = AnalyzeConfigEntry(name='expect',
+    config_entry = AnalyzeConfigEntry(label='expect',
                                       mode='expect_stdout',
                                       status='FAILED')
 

@@ -48,7 +48,7 @@ class LogParser:
         The dict is keyed by configuration entry names and its values are
         what the pattern of the configuration entry matches in group 1.
         '''
-        log_data: dict[str, list[str]] = {entry.name: []
+        log_data: dict[str, list[str]] = {entry.label: []
                                           for entry in self.config}
         self.logger.info('Parsing test output')
 
@@ -68,6 +68,6 @@ class LogParser:
                     if not scope_match:
                         continue
 
-                    log_data[config_entry.name].append(scope_match.group(1))
+                    log_data[config_entry.label].append(scope_match.group(1))
 
         return log_data

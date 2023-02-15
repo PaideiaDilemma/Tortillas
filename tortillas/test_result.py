@@ -44,11 +44,11 @@ class TestResult:
         self.status = self.Status.SUCCESS
 
         for analyze_config_entry in self.config:
-            log_data_name = analyze_config_entry.name
+            log_data_name = analyze_config_entry.label
             status = (None if not analyze_config_entry.status else
                       self.Status[analyze_config_entry.status])
 
-            self.logger.debug(f'Analyzing {analyze_config_entry.name}')
+            self.logger.debug(f'Analyzing {analyze_config_entry.label}')
 
             if not log_data[log_data_name]:
                 continue

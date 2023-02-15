@@ -8,51 +8,51 @@ sc_tortillas_finished: 42069
 
 parse:
 
-  - name: kernel_panics
-    scope: 'KERNEL PANIC'
+  - scope: 'KERNEL PANIC'
     pattern: '(.*)'
+    label: kernel_panics
 
-  - name: backtrace
-    scope: 'BACKTRACE'
+  - scope: 'BACKTRACE'
     pattern: '(.*)'
+    label: backtrace
 
-  - name: lock_logs
-    scope: 'LOCK'
+  - scope: 'LOCK'
     pattern: '(.*)'
+    label: lock_logs
 
-  - name: command_not_understood
-    scope: 'SYSCALL'
+  - scope: 'SYSCALL'
     pattern: 'Syscall::write: (Command not understood)'
+    label: command_not_understood
 
-  - name: exit_codes
-    scope: 'SYSCALL'
+  - scope: 'SYSCALL'
     pattern: 'Syscall::EXIT: called, exit_code: (\d+)'
+    label: exit_codes
 
-  - name: userspace_asserts
-    scope: 'SYSCALL'
+  - scope: 'SYSCALL'
     pattern: 'Syscall::write: (Assertion failed:.*)'
+    label: userspace_asserts
 
 
 analyze:
 
-  - name: lock_logs
+  - label: lock_logs
     mode: add_as_error
 
-  - name: kernel_panics
+  - label: kernel_panics
     mode: add_as_error
     status: PANIC
 
-  - name: backtrace
+  - label: backtrace
     mode: add_as_error_join
 
-  - name: command_not_understood
+  - label: command_not_understood
     mode: add_as_error
     status: FAILED
 
-  - name: exit_codes
+  - label: exit_codes
     mode: exit_codes
     status: FAILED
 
-  - name: userspace_asserts
+  - label: userspace_asserts
     mode: add_as_error
     status: FAILED
