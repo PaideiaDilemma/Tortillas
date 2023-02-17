@@ -34,10 +34,24 @@ class TestRun:
 
         self.result = TestResult(test_repr=repr(self),
                                  test_spec=self.spec,
-                                 config=config.analyze)
+                                 config=config)
 
         tmp_dir_name = repr(self).lower().replace(' ', '-')
         self.tmp_dir = rf'{TEST_RUN_DIR}/{tmp_dir_name}'
+
+    def analyze(self):
+        '''
+        Call this to run the parse and analyze the logfile of this test run.
+        '''
+        parser = LogParser(log_file_path=f'{self.tmp_dir}/out.log',
+                           logger=self.logger,
+                           config=self.result.config)
+
+        self.result.analyze(parser.parse())
+
+    def get_tmp_dir(self) -> str:
+        '''Get the temporary directory of the test run'''
+        return self.tmp_dir
 
     def __eq__(self, other) -> bool:
         if isinstance(other, TestRun):
@@ -49,10 +63,6 @@ class TestRun:
         if self.run_number:
             ret += f' Run {self.run_number}'
         return ret
-
-    def get_tmp_dir(self) -> str:
-        '''Get the temporary directory of the test run'''
-        return self.tmp_dir
 
 
 class TestRunner:
@@ -110,7 +120,7 @@ class TestRunner:
 
                     test_run.result = TestResult(test_repr=repr(test_run),
                                                  test_spec=test_run.spec,
-                                                 config=self.config.analyze)
+                                                 config=self.config)
 
                     self.progress_bar.update_counter(
                         self.progress_bar.Counter.RUNNING, incr=-1)
@@ -224,11 +234,10 @@ class TestRunner:
                 summary += f'### {repr(run)} - {run.tmp_dir}/out.log\n\n'
                 for error in run.result.errors:
                     error = f'{error.strip()}\n'
-                    if '=== Begin of backtrace' in error:
-                        summary += f'```\n{error}```\n'
-                        continue
-
-                    summary += f'- {error}'
+                    if '```' in error:
+                        summary += error
+                    else:
+                        summary += f'- {error}'
                 summary += '\n'
 
         with open(f'{SWEB_BUILD_DIR}/tortillas_summary.md',
@@ -361,9 +370,7 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
         # Wait a bit for cleanup and debug output to be flushed
         time.sleep(1)
 
-    parser = LogParser(f'{test.tmp_dir}/out.log', log, config.parse)
-
-    test.result.analyze(parser.parse())
+    test.analyze()
 
     log.info('Done!')
     if callback:

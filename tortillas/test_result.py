@@ -4,7 +4,7 @@ from __future__ import annotations
 from enum import Enum
 
 from .utils import get_logger
-from .tortillas_config import AnalyzeConfigEntry
+from .tortillas_config import TortillasConfig
 from .test_specification import TestSpec
 
 
@@ -23,7 +23,7 @@ class TestResult:
         FAILED = 4
 
     def __init__(self, test_repr: str, test_spec: TestSpec,
-                 config: list[AnalyzeConfigEntry]):
+                 config: TortillasConfig):
         self.logger = get_logger(f'{test_repr} result', prefix=True)
 
         self.test_repr = test_repr
@@ -43,29 +43,28 @@ class TestResult:
         '''Analyze `log_data` using the analyze configuration.'''
         self.status = self.Status.SUCCESS
 
-        for analyze_config_entry in self.config:
-            log_data_name = analyze_config_entry.label
-            status = (None if not analyze_config_entry.status else
-                      self.Status[analyze_config_entry.status])
+        for entry_name, logs in log_data.items():
+            config_entry = self.config.get_analyze_entry_by_name(entry_name)
+            status = (None if not config_entry.status else
+                      self.Status[config_entry.status])
 
-            self.logger.debug(f'Analyzing {analyze_config_entry.label}')
-
-            if not log_data[log_data_name]:
+            if not logs:
                 continue
 
-            if analyze_config_entry.mode == 'add_as_error':
-                self.add_errors(log_data[log_data_name], status)
+            if config_entry.mode == 'add_as_error':
+                self.add_errors(logs, status)
 
-            elif analyze_config_entry.mode == 'add_as_error_join':
-                self.add_errors([''.join(log_data[log_data_name])], status)
+            elif config_entry.mode == 'add_as_error_join':
+                self.add_errors([f"```\n{''.join(logs)}```\n"], status)
 
-            elif analyze_config_entry.mode == 'expect_stdout':
-                self.check_expect_stdout(log_data[log_data_name],
-                                         log_data['stdout'], status
-                                         )
+            elif config_entry.mode == 'add_as_error_last':
+                self.add_errors(logs[0:1], status)
 
-            elif analyze_config_entry.mode == 'exit_codes':
-                self.check_exit_codes(log_data[log_data_name], status)
+            elif config_entry.mode == 'expect_stdout':
+                self.check_expect_stdout(logs, log_data['stdout'], status)
+
+            elif config_entry.mode == 'exit_codes':
+                self.check_exit_codes(logs, status)
 
     def _set_status(self, status: TestResult.Status | None):
         if not status:

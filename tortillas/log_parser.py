@@ -6,14 +6,14 @@ import re
 import logging
 
 from .utils import escape_ansi
-from .tortillas_config import ParseConfigEntry
+from .tortillas_config import TortillasConfig
 
 
 class LogParser:
     '''Configurable parser for the log output of SWEB.'''
 
     def __init__(self, log_file_path: str, logger: logging.Logger,
-                 config: list[ParseConfigEntry]):
+                 config: TortillasConfig):
         '''
         Setup the parser. The parser will parse the file at `log_file_path`
         with the rules specified by `config`.
@@ -22,7 +22,7 @@ class LogParser:
         self.log_file_path = log_file_path
         self.logger = logger
 
-        self.config: list[ParseConfigEntry] = config
+        self.config: TortillasConfig = config
 
         self.split_by_pattern = re.compile(r'''
             # Debug: https://regex101.com/r/UiFMcy/3
@@ -48,8 +48,8 @@ class LogParser:
         The dict is keyed by configuration entry names and its values are
         what the pattern of the configuration entry matches in group 1.
         '''
-        log_data: dict[str, list[str]] = {entry.label: []
-                                          for entry in self.config}
+        log_data: dict[str, list[str]] = {entry.name: []
+                                          for entry in self.config.analyze}
         self.logger.info('Parsing test output')
 
         with open(self.log_file_path, 'rb') as logfile:
@@ -59,7 +59,7 @@ class LogParser:
 
                 message = match.group(2)
 
-                for config_entry in self.config:
+                for config_entry in self.config.analyze:
                     # See if scope matches
                     if config_entry.scope not in ('ALL', debug_log_type):
                         continue
@@ -68,6 +68,6 @@ class LogParser:
                     if not scope_match:
                         continue
 
-                    log_data[config_entry.label].append(scope_match.group(1))
+                    log_data[config_entry.name].append(scope_match.group(1))
 
         return log_data

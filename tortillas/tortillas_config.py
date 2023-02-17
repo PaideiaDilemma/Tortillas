@@ -11,32 +11,24 @@ from .utils import get_logger
 
 
 @dataclasses.dataclass
-class ParseConfigEntry:
+class AnalyzeConfigEntry:
     '''
     Configuration of the log_parser.
     '''
 
+    name: str
     scope: str
     pattern: str
-    label: str
+
+    mode: str = dataclasses.field(default_factory=str)
+    status: str = dataclasses.field(default_factory=str)
 
     pattern_compiled: re.Pattern | None = None
 
-    def compile_pattern(self) -> ParseConfigEntry:
+    def compile_pattern(self) -> AnalyzeConfigEntry:
         '''Use `re.compile`, to compile the `self.pattern`.'''
         self.pattern_compiled = re.compile(self.pattern, re.DOTALL)
         return self
-
-
-@dataclasses.dataclass
-class AnalyzeConfigEntry:
-    '''
-    Configuration for analyzing log data.
-    '''
-
-    label: str
-    mode: str
-    status: str = dataclasses.field(default_factory=str)
 
 
 @dataclasses.dataclass(init=False, eq=False)
@@ -59,8 +51,11 @@ class TortillasConfig:
     sc_tortillas_bootup: int
     sc_tortillas_finished: int
 
-    parse: list[ParseConfigEntry] = dataclasses.field(default_factory=list)
     analyze: list[AnalyzeConfigEntry] = dataclasses.field(default_factory=list)
+
+    def get_analyze_entry_by_name(self, name: str) -> AnalyzeConfigEntry:
+        '''Get entry from `self.analyze` by name.'''
+        return next((entry for entry in self.analyze if entry.name == name))
 
     def __init__(self, config_file_path: str):
         self.logger = get_logger('Tortillas config', prefix=True)
@@ -83,12 +78,8 @@ class TortillasConfig:
                         f'Expected option \"{field.name}\"')
                     sys.exit(1)
 
-                if field.name == 'parse':
-                    self.parse = [ParseConfigEntry(**c).compile_pattern()
-                                  for c in config.pop('parse')]
-
                 elif field.name == 'analyze':
-                    self.analyze = [AnalyzeConfigEntry(**c)
+                    self.analyze = [AnalyzeConfigEntry(**c).compile_pattern()
                                     for c in config.pop('analyze')]
                 else:
                     self.logger.debug(f'{field.name}: {config[field.name]}')

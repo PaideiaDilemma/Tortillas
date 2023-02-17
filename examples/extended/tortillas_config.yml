@@ -6,65 +6,55 @@ default_test_timeout_secs: 120
 sc_tortillas_bootup: 69420
 sc_tortillas_finished: 42069
 
-parse:
-
-  - scope: 'KERNEL PANIC'
-    pattern: '(.*)'
-    label: kernel_panics
-
-  - scope: 'BACKTRACE'
-    pattern: '(.*)'
-    label: backtrace
-
-  - scope: 'LOCK'
-    pattern: '(.*)'
-    label: lock_logs
-
-  - scope: 'SYSCALL'
-    pattern: 'Syscall::write: (Command not understood)'
-    label: command_not_understood
-
-  - scope: 'SYSCALL'
-    pattern: 'Syscall::EXIT: called, exit_code: (\d+)'
-    label: exit_codes
-
-  - scope: 'SYSCALL'
-    pattern: 'Syscall::write: (Assertion failed:.*)'
-    label: userspace_asserts
-
-  - scope: 'SYSCALL'
-    pattern: 'Syscall::write: (?!\s*TORTILLAS EXPECT: )(.*)'
-    label: stdout
-
-  - scope: 'SYSCALL'
-    pattern: 'Syscall::write: TORTILLAS EXPECT: (.*)'
-    label: expect_stdout
-
-
 analyze:
 
-  - label: lock_logs
-    mode: add_as_error
-
-  - label: kernel_panics
-    mode: add_as_error
-    status: PANIC
-
-  - label: backtrace
-    mode: add_as_error_join
-
-  - label: command_not_understood
-    mode: add_as_error
-    status: FAILED
-
-  - label: exit_codes
+# Exit codes
+  - name: exit_codes
+    scope: 'SYSCALL'
+    pattern: 'Syscall::EXIT: called, exit_code: (\d+)'
     mode: exit_codes
     status: FAILED
 
-  - label: userspace_asserts
+# Userspace asserts
+  - name: userspace_asserts
+    scope: 'SYSCALL'
+    pattern: 'Syscall::write: (Assertion failed:.*)'
     mode: add_as_error
     status: FAILED
 
-  - label: expect_stdout
+# Locking errors
+  - name: lock_logs
+    scope: 'LOCK'
+    pattern: '(.*)'
+    mode: add_as_error
+
+# Command not understood
+  - name: command_not_understood
+    scope: 'SYSCALL'
+    pattern: 'Syscall::write: (Command not understood)'
+    mode: add_as_error
+    status: FAILED
+
+# Tortillas expect
+  - name: stdout
+    scope: 'SYSCALL'
+    pattern: 'Syscall::write: (?!\s*TORTILLAS EXPECT: )(.*)'
+
+  - name: expect_stdout
+    scope: 'SYSCALL'
+    pattern: 'Syscall::write: TORTILLAS EXPECT: (.*)'
     mode: expect_stdout
     status: FAILED
+
+# Kernel panics
+  - name: kernel_panics
+    scope: 'KERNEL PANIC'
+    pattern: '(.*)'
+    mode: add_as_error
+    status: PANIC
+
+# Backtraces
+  - name: backtrace
+    scope: 'BACKTRACE'
+    pattern: '(.*)'
+    mode: add_as_error_join
