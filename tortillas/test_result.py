@@ -3,8 +3,9 @@
 from __future__ import annotations
 from enum import Enum
 
+from .constants import TORTILLAS_EXPECT_PREFIX
 from .utils import get_logger
-from .tortillas_config import TortillasConfig
+from .tortillas_config import AnalyzeConfigEntry
 from .test_specification import TestSpec
 
 
@@ -23,7 +24,7 @@ class TestResult:
         FAILED = 4
 
     def __init__(self, test_repr: str, test_spec: TestSpec,
-                 config: TortillasConfig):
+                 config: list[AnalyzeConfigEntry]):
         self.logger = get_logger(f'{test_repr} result', prefix=True)
 
         self.test_repr = test_repr
@@ -44,7 +45,7 @@ class TestResult:
         self.status = self.Status.SUCCESS
 
         for entry_name, logs in log_data.items():
-            config_entry = self.config.get_analyze_entry_by_name(entry_name)
+            config_entry = self._get_config_entry_by_name(entry_name)
             status = (None if not config_entry.status else
                       self.Status[config_entry.status])
 
@@ -61,10 +62,13 @@ class TestResult:
                 self.add_errors(logs[0:1], status)
 
             elif config_entry.mode == 'expect_stdout':
-                self.check_expect_stdout(logs, log_data['stdout'], status)
+                self.check_expect_stdout(logs, status)
 
             elif config_entry.mode == 'exit_codes':
                 self.check_exit_codes(logs, status)
+
+    def _get_config_entry_by_name(self, name: str) -> AnalyzeConfigEntry:
+        return next((entry for entry in self.config if entry.name == name))
 
     def _set_status(self, status: TestResult.Status | None):
         if not status:
@@ -80,25 +84,27 @@ class TestResult:
         self.errors.append(error)
         self.status = self.Status.FAILED
 
-    def add_errors(self, log_data_entry: list[str],
+    def add_errors(self, errors: list[str],
                    status: TestResult.Status | None = None):
         '''Handle config mode \'ad_as_error\', set `status`, if supplied'''
-        if not log_data_entry:
+        if not errors:
             return
 
-        for error in log_data_entry:
+        for error in errors:
             self.errors.append(error)
 
         self._set_status(status)
 
-    def check_expect_stdout(self, expect_stdout: list[str],
-                            stdout: list[str],
+    def check_expect_stdout(self, logs,
                             status: TestResult.Status | None = None):
         '''Handle config mode \'expect_stdout\', set `status`, if supplied'''
-        if not expect_stdout:
-            return
-
         missing_output = False
+
+        stdout = [line for line in logs
+                  if not line.startswith(TORTILLAS_EXPECT_PREFIX)]
+
+        expect_stdout = (line[len(TORTILLAS_EXPECT_PREFIX)-1:] for line in logs
+                         if line.startswith(TORTILLAS_EXPECT_PREFIX))
 
         for expect in expect_stdout:
             if not any((expect.strip() in got for got in stdout)):
@@ -107,7 +113,7 @@ class TestResult:
 
         if missing_output:
             full_stdout = ''.join(line for line in stdout)
-            self.errors.append(f'Actual output:\n{full_stdout}')
+            self.errors.append(f'Actual output:\n```\n{full_stdout}\n```')
             self._set_status(status)
 
     def check_exit_codes(self, exit_codes: list[str],

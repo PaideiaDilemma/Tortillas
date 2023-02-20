@@ -53,10 +53,6 @@ class TortillasConfig:
 
     analyze: list[AnalyzeConfigEntry] = dataclasses.field(default_factory=list)
 
-    def get_analyze_entry_by_name(self, name: str) -> AnalyzeConfigEntry:
-        '''Get entry from `self.analyze` by name.'''
-        return next((entry for entry in self.analyze if entry.name == name))
-
     def __init__(self, config_file_path: str):
         self.logger = get_logger('Tortillas config', prefix=True)
         with open(config_file_path, 'r') as yaml_config_file:

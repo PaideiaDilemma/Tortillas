@@ -36,13 +36,9 @@ analyze:
     status: FAILED
 
 # Tortillas expect
-  - name: stdout
-    scope: 'SYSCALL'
-    pattern: 'Syscall::write: (?!\s*TORTILLAS EXPECT: )(.*)'
-
   - name: expect_stdout
     scope: 'SYSCALL'
-    pattern: 'Syscall::write: TORTILLAS EXPECT: (.*)'
+    pattern: 'Syscall::write: (.*)'
     mode: expect_stdout
     status: FAILED
 
