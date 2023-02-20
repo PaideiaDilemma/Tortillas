@@ -13,11 +13,11 @@ from .constants import TEST_FOLDER_PATH
 
 def get_test_specs(sweb_src_folder: str, test_glob: str) -> list[TestSpec]:
     '''
-    Gets all TestsSpecs (yaml test headers), in the test directory.
-    With `test_glob`, one can only select tests with a certain name
+    Gets all TestSpecs (yaml test headers) that can be found at
+    `sweb_src_folder/TEST_FOLDER_PATH/{test_glob}.c`
     '''
     file_paths = list(pathlib.Path(
-        f'{sweb_src_folder}/{TEST_FOLDER_PATH}').glob(f'{test_glob}*.c'))
+        f'{sweb_src_folder}/{TEST_FOLDER_PATH}').glob(f'{test_glob}.c'))
 
     specs = []
     for file_path in file_paths:

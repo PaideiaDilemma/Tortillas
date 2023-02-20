@@ -59,9 +59,11 @@ def main():
                         help='Turn of the progress bar')
 
     parser.add_argument('-g', '--test-glob',
-                        help='Identifier of testcases in the test source dir, '
-                             'e.g. -b test_pthread (tests test_pthread*.c)',
-                        default='')
+                        help='Glob of tests in the testfolder\n'
+                             'e.g. -g test_pthread* '
+                              '(tests userspace/tests/test_pthread*.c)\n'
+                              'Note: zsh users must excape: test_pthread\\*',
+                        default='*')
 
     parser.add_argument('-c', '--category', type=str, nargs='*',
                         help='Category or a list of categories to test')
