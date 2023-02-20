@@ -215,7 +215,7 @@ class TestRunner:
         summary += markdown_table_delim()
 
         for spec in self.disabled_specs:
-            summary += markdown_table_row([spec,
+            summary += markdown_table_row([spec.test_name,
                                            TestResult.Status.DISABLED.name])
 
         for run in self.test_runs:
