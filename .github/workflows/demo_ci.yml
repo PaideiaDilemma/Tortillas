@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  minimal-example:
+  base:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -45,7 +45,7 @@ jobs:
         if: always()
         run: cat /tmp/sweb/tortillas_summary.md >> $GITHUB_STEP_SUMMARY
 
-  extended-example:
+  extended:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -74,7 +74,7 @@ jobs:
         if: always()
         run: cat /tmp/sweb/tortillas_summary.md >> $GITHUB_STEP_SUMMARY
 
-  panic-example:
+  panic:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
