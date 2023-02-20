@@ -6,7 +6,8 @@ from tortillas.tortillas_config import AnalyzeConfigEntry
 def test_log_splitting():
     config_entry = AnalyzeConfigEntry(name='test',
                                       scope='SYSCALL',
-                                      pattern=r'(.*)').compile_pattern()
+                                      pattern=r'(.*)',
+                                      mode='').compile_pattern()
 
     log_parser = LogParser(log_file_path='./tests/assets/out_log.txt',
                            logger=logging.getLogger(),
@@ -22,7 +23,8 @@ def test_log_splitting():
 def test_parsing_int_splitting():
     config_entry = AnalyzeConfigEntry(name='test',
                                       scope='SYSCALL',
-                                      pattern=r'exit_code: (\d+)')
+                                      pattern=r'exit_code: (\d+)',
+                                      mode='')
 
     config_entry.compile_pattern()
 
@@ -39,11 +41,12 @@ def test_parsing_int_splitting():
 def test_mutliple_config_entries():
     config = [
             AnalyzeConfigEntry(name='a', scope='SYSCALL',
-                               pattern='(.*)'),
+                               pattern='(.*)', mode=''),
             AnalyzeConfigEntry(name='b', scope='THREAD',
-                               pattern='(kill: (.*))'),
+                               pattern='(kill: (.*))', mode=''),
             AnalyzeConfigEntry(name='c', scope='PAGEFAULT',
-                               pattern=r'(Address:\s+0x[0-9a-fA-F]+)')]
+                               pattern=r'(Address:\s+0x[0-9a-fA-F]+)',
+                               mode='')]
 
     for entry in config:
         entry.compile_pattern()
