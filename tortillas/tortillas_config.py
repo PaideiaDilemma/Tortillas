@@ -19,8 +19,8 @@ class AnalyzeConfigEntry:
     name: str
     scope: str
     pattern: str
+    mode: str
 
-    mode: str = dataclasses.field(default_factory=str)
     status: str = dataclasses.field(default_factory=str)
 
     pattern_compiled: re.Pattern | None = None
