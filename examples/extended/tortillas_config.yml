@@ -13,14 +13,14 @@ analyze:
     scope: 'SYSCALL'
     pattern: 'Syscall::EXIT: called, exit_code: (\d+)'
     mode: exit_codes
-    status: FAILED
+    set_status: FAILED
 
 # Userspace asserts
   - name: userspace_asserts
     scope: 'SYSCALL'
     pattern: 'Syscall::write: (Assertion failed:.*)'
     mode: add_as_error
-    status: FAILED
+    set_status: FAILED
 
 # Locking errors
   - name: lock_logs
@@ -33,21 +33,21 @@ analyze:
     scope: 'SYSCALL'
     pattern: 'Syscall::write: (Command not understood)'
     mode: add_as_error
-    status: FAILED
+    set_status: FAILED
 
 # Tortillas expect
   - name: expect_stdout
     scope: 'SYSCALL'
     pattern: 'Syscall::write: (.*)'
     mode: expect_stdout
-    status: FAILED
+    set_status: FAILED
 
 # Kernel panics
   - name: kernel_panics
     scope: 'KERNEL PANIC'
     pattern: '(.*)'
     mode: add_as_error
-    status: PANIC
+    set_status: PANIC
 
 # Backtraces
   - name: backtrace

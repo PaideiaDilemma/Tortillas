@@ -23,7 +23,7 @@ def test_analzye_add_as_error():
                                       scope='SYSCALL',
                                       pattern=r'(.*)',
                                       mode='add_as_error',
-                                      status='PANIC').compile_pattern()
+                                      set_status='PANIC').compile_pattern()
 
     log_data = _get_log_data(config_entry)
 
@@ -44,7 +44,7 @@ def test_analzye_exit_codes():
                                       scope='',
                                       pattern='',
                                       mode='exit_codes',
-                                      status='FAILED')
+                                      set_status='FAILED')
 
     test_result = TestResult(test_repr='pytest',
                              test_spec=_get_test_spec(),
@@ -67,7 +67,7 @@ def test_expect_stdout():
                                       scope='',
                                       pattern='',
                                       mode='expect_stdout',
-                                      status='FAILED')
+                                      set_status='FAILED')
 
     test_result = TestResult(test_repr='pytest',
                              test_spec=_get_test_spec(),

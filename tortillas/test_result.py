@@ -46,8 +46,8 @@ class TestResult:
 
         for entry_name, logs in log_data.items():
             config_entry = self._get_config_entry_by_name(entry_name)
-            status = (None if not config_entry.status else
-                      self.Status[config_entry.status])
+            status = (None if not config_entry.set_status else
+                      self.Status[config_entry.set_status])
 
             if not logs:
                 continue

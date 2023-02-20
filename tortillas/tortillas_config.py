@@ -21,7 +21,7 @@ class AnalyzeConfigEntry:
     pattern: str
     mode: str
 
-    status: str = dataclasses.field(default_factory=str)
+    set_status: str = dataclasses.field(default_factory=str)
 
     pattern_compiled: re.Pattern | None = None
 
