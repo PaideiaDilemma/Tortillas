@@ -1,11 +1,11 @@
 #!/bin/bash
-if [ "$#" -ne 2 ] ; then
-    echo "usage: setup_sweb.sh <sweb_path> <example>"
+if [ "$#" -ne 3 ] ; then
+    echo "usage: setup_sweb.sh <tortillas_path> <sweb_path> <example>"
     exit 1
 fi
 
-tortillas_path=$(dirname $0)
-sweb_path=$1
+tortillas_path=$1
+sweb_path=$2
 example_dir="$tortillas_path/examples/$3"
 
 # Patch sweb
