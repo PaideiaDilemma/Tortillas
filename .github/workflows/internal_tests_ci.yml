@@ -29,7 +29,7 @@ jobs:
 
       - name: Setup and compile sweb
         run: |
-          ./setup_sweb.sh $(pwd) $(pwd)/sweb base
+          ./setup_sweb.sh $(pwd)/sweb base
           cmake -B"/tmp/sweb" -H"./sweb"
           cmake --build "/tmp/sweb" -j4
 

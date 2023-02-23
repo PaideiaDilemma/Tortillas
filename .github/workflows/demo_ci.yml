@@ -28,7 +28,7 @@ jobs:
 
       - name: Setup sweb
         run:
-          ./setup_sweb.sh $(pwd) $(pwd)/sweb base
+          ./setup_sweb.sh $(pwd)/sweb base
 
       - name: Run tortillas
         run: |
