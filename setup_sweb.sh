@@ -1,5 +1,8 @@
 #!/bin/bash
-[ "$#" -eq 3 ] || (echo "usage: setup_sweb.sh <tortillas_path> <sweb_path> <example>" && exit 1)
+if [ "$#" -ne 3 ] ; then
+    echo "usage: setup_sweb.sh <tortillas_path> <sweb_path> <example>"
+    exit 1
+fi
 
 tortillas_path=$1
 sweb_path=$2
