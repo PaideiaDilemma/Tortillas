@@ -3,51 +3,59 @@
 from __future__ import annotations
 from enum import Enum
 
+import dataclasses
+
 from .constants import TORTILLAS_EXPECT_PREFIX
 from .utils import get_logger
 from .tortillas_config import AnalyzeConfigEntry
 from .test_specification import TestSpec
 
 
+class TestStatus(Enum):
+    '''Represents the outcome of a test run.'''
+    DISABLED = 1
+    SUCCESS = 2
+    PANIC = 3
+    FAILED = 4
+    NOT_RUN = 99
+
+
+@dataclasses.dataclass
 class TestResult:
+    '''Represents the result of a test run.'''
+    status: TestStatus
+    errors: list[str] = dataclasses.field(default_factory=list)
+    retry: bool = False
+
+
+class LogAnalyzer:
     '''
     Represent the result of a TestRun.
     The actuall result is determined by analyzing log data using
     the config entries in `TortillasConfig.analyze`.
     '''
 
-    class Status(Enum):
-        '''Represents the final result of a test run.'''
-        DISABLED = 1
-        SUCCESS = 2
-        PANIC = 3
-        FAILED = 4
-
     def __init__(self, test_repr: str, test_spec: TestSpec,
                  config: list[AnalyzeConfigEntry]):
-        self.logger = get_logger(f'{test_repr} result', prefix=True)
+        self.logger = get_logger(f'{test_repr} analyzer', prefix=True)
 
         self.test_repr = test_repr
         self.config = config
         self.expect_exit_codes = ([0] if not test_spec.expect_exit_codes
                                   else test_spec.expect_exit_codes)
 
-        self.retry = False
+        self.disabled = test_spec.disabled
 
-        self.errors: list[str] = []
-        self.status: self.Status
-        if test_spec.disabled:
-            self.status = self.Status.DISABLED
-            return
+        self.result = TestResult(TestStatus.NOT_RUN)
 
-    def analyze(self, log_data: dict[str, list[str]]):
+    def analyze(self, log_data: dict[str, list[str]]) -> TestResult:
         '''Analyze `log_data` using the analyze configuration.'''
-        self.status = self.Status.SUCCESS
-
+        assert self.result.status == TestStatus.NOT_RUN
+        self.result.status = TestStatus.SUCCESS
         for entry_name, logs in log_data.items():
             config_entry = self._get_config_entry_by_name(entry_name)
             status = (None if not config_entry.set_status else
-                      self.Status[config_entry.set_status])
+                      TestStatus[config_entry.set_status])
 
             if not logs:
                 continue
@@ -67,6 +75,8 @@ class TestResult:
             elif config_entry.mode == 'exit_codes':
                 self.check_exit_codes(logs, status)
 
+        return self.result
+
     def _get_config_entry_by_name(self, name: str) -> AnalyzeConfigEntry:
         return next((entry for entry in self.config if entry.name == name))
 
@@ -75,14 +85,7 @@ class TestResult:
             return
 
         self.logger.debug(f'Setting status to {status.name}')
-        self.status = status
-
-    def add_execution_error(self, error: str):
-        '''
-        Add an `error` during execution. Used for example, if a timeout occurs.
-        '''
-        self.errors.append(error)
-        self.status = self.Status.FAILED
+        self.result.status = status
 
     def add_errors(self, errors: list[str],
                    status: TestResult.Status | None = None):
@@ -91,7 +94,7 @@ class TestResult:
             return
 
         for error in errors:
-            self.errors.append(error)
+            self.result.errors.append(error)
 
         self._set_status(status)
 
@@ -108,24 +111,24 @@ class TestResult:
 
         for expect in expect_stdout:
             if not any((expect.strip() in got for got in stdout)):
-                self.errors.append(f'Expected output: {expect}')
+                self.result.errors.append(f'Expected output: {expect}')
                 missing_output = True
 
         if missing_output:
             full_stdout = ''.join(line for line in stdout)
-            self.errors.append(f'Actual output:\n```\n{full_stdout}\n```')
+            self.result.errors.append(f'Actual output:\n```\n{full_stdout}\n```')
             self._set_status(status)
 
     def check_exit_codes(self, exit_codes: list[str],
                          status: TestResult.Status | None = None):
         '''Handle config mode \'exit_codes\', set `status`, if supplied'''
-        if self.status == self.Status.PANIC:
+        if self.result.status == TestStatus.PANIC:
             return
 
         if not exit_codes:
-            self.errors.append('Missing exit code!')
-            if self.status == self.Status.SUCCESS:
-                self.status = self.Status.FAILED
+            self.result.errors.append('Missing exit code!')
+            if self.result.status == TestStatus.SUCCESS:
+                self.result.status = TestStatus.FAILED
                 return
 
         unexpected_exit_codes = False
@@ -133,18 +136,18 @@ class TestResult:
             try:
                 exit_code_int = int(exit_code)
             except ValueError:
-                self.errors.append(f'Failed to parse exit code {exit_code}')
-                self.status = self.Status.FAILED
-                self.retry = True
+                self.result.errors.append(f'Failed to parse exit code {exit_code}')
+                self.result.status = TestStatus.FAILED
+                self.result.retry = True
                 return
 
             if exit_code_int not in self.expect_exit_codes:
-                self.errors.append(f'Unexpected exit code {exit_code}')
+                self.result.errors.append(f'Unexpected exit code {exit_code}')
                 unexpected_exit_codes = True
 
         if unexpected_exit_codes:
             expected_codes = ', '.join(str(e)
                                        for e in self.expect_exit_codes)
-            self.errors.append(
+            self.result.errors.append(
                     f'Expected exit code(s): {expected_codes}')
             self._set_status(status)

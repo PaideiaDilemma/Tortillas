@@ -3,7 +3,7 @@ import logging
 from tortillas.log_parser import LogParser
 from tortillas.test_specification import TestSpec
 from tortillas.tortillas_config import AnalyzeConfigEntry
-from tortillas.test_result import TestResult
+from tortillas.log_analyzer import LogAnalyzer, TestStatus
 
 
 def _get_log_data(config_entry: AnalyzeConfigEntry):
@@ -27,14 +27,14 @@ def test_analzye_add_as_error():
 
     log_data = _get_log_data(config_entry)
 
-    test_result = TestResult(test_repr='pytest',
-                             test_spec=_get_test_spec(),
-                             config=[config_entry])
+    analyzer = LogAnalyzer(test_repr='pytest',
+                           test_spec=_get_test_spec(),
+                           config=[config_entry])
 
-    test_result.analyze(log_data)
+    analyzer.analyze(log_data)
 
-    assert test_result.errors
-    assert test_result.status == TestResult.Status.PANIC
+    assert analyzer.result.errors
+    assert analyzer.result.status == TestStatus.PANIC
 
 
 def test_analzye_exit_codes():
@@ -46,18 +46,18 @@ def test_analzye_exit_codes():
                                       mode='exit_codes',
                                       set_status='FAILED')
 
-    test_result = TestResult(test_repr='pytest',
-                             test_spec=_get_test_spec(),
-                             config=[config_entry])
+    analyzer = LogAnalyzer(test_repr='pytest',
+                           test_spec=_get_test_spec(),
+                           config=[config_entry])
 
-    test_result.analyze(log_data)
+    analyzer.analyze(log_data)
 
     # test_result.errors:
     # 5x Unexpected exit code {code}
     # 1x Expected exit code(s) {codes}
-    assert len(test_result.errors) == 5
+    assert len(analyzer.result.errors) == 5
 
-    assert test_result.status == TestResult.Status.FAILED
+    assert analyzer.result.status == TestStatus.FAILED
 
 def test_expect_stdout():
     log_data = {'test': ['TORTILLAS EXPECT: A', 'A',
@@ -69,15 +69,15 @@ def test_expect_stdout():
                                       mode='expect_stdout',
                                       set_status='FAILED')
 
-    test_result = TestResult(test_repr='pytest',
-                             test_spec=_get_test_spec(),
-                             config=[config_entry])
+    analyzer = LogAnalyzer(test_repr='pytest',
+                           test_spec=_get_test_spec(),
+                           config=[config_entry])
 
-    test_result.analyze(log_data)
+    analyzer.analyze(log_data)
 
     # test_result.errors:
     # 1x Expected ouput: B
     # 1x Actual output: A
-    assert len(test_result.errors) == 2
+    assert len(analyzer.result.errors) == 2
 
-    assert test_result.status == TestResult.Status.FAILED
+    assert analyzer.result.status == TestStatus.FAILED

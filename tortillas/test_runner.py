@@ -14,7 +14,7 @@ from .constants import (SWEB_BUILD_DIR, TEST_RUN_DIR, QEMU_VMSTATE_TAG,
                         INT_SYSCALL)
 from .tortillas_config import TortillasConfig
 from .test_specification import TestSpec
-from .test_result import TestResult
+from .log_analyzer import TestResult, LogAnalyzer, TestStatus
 from .log_parser import LogParser
 from .progress_bar import ProgressBar
 from .qemu_interface import QemuInterface, InterruptWatchdog
@@ -32,26 +32,36 @@ class TestRun:
 
         self.logger = get_logger(repr(self), prefix=True)
 
-        self.result = TestResult(test_repr=repr(self),
-                                 test_spec=self.spec,
-                                 config=config.analyze)
+        self.analyzer = LogAnalyzer(test_repr=repr(self),
+                                    test_spec=self.spec,
+                                    config=config.analyze)
 
         tmp_dir_name = repr(self).lower().replace(' ', '-')
         self.tmp_dir = rf'{TEST_RUN_DIR}/{tmp_dir_name}'
 
+    @property
+    def result(self):
+        '''
+        The test result. `result.status` will equal `TestStatus.NOT_RUN`,
+        until `this.analyze()` is called.
+        '''
+        return self.analyzer.result
+
     def analyze(self):
         '''
-        Call this to run the parse and analyze the logfile of this test run.
+        Call this to parse and analyze the logfile of this test run.
         '''
         parser = LogParser(log_file_path=f'{self.tmp_dir}/out.log',
                            logger=self.logger,
-                           config=self.result.config)
+                           config=self.analyzer.config)
 
-        self.result.analyze(parser.parse())
+        self.analyzer.analyze(parser.parse())
 
-    def get_tmp_dir(self) -> str:
-        '''Get the temporary directory of the test run'''
-        return self.tmp_dir
+    def reset(self):
+        '''
+        This resets the TestResult, in order for the TestRun, to be ran again.
+        '''
+        self.result = TestResult(TestStatus.NOT_RUN)
 
     def __eq__(self, other) -> bool:
         if isinstance(other, TestRun):
@@ -115,12 +125,9 @@ class TestRunner:
                     test_logger = get_logger(repr(test_run), prefix=True)
                     if test_run.result.panic:
                         panic = ''.join(test_run.result.errors)
-                        test_logger.info(
-                            f'Restarting test, because of {panic}')
+                        test_logger.info(f'Restarting test, because of {panic}')
 
-                    test_run.result = TestResult(test_repr=repr(test_run),
-                                                 test_spec=test_run.spec,
-                                                 config=self.config.analyze)
+                    test_run.reset()
 
                     self.progress_bar.update_counter(
                         self.progress_bar.Counter.RUNNING, incr=-1)
@@ -129,7 +136,7 @@ class TestRunner:
                     return
 
                 counter = counters.FAIL
-                if test_run.result.status == TestResult.Status.SUCCESS:
+                if test_run.result.status == TestStatus.SUCCESS:
                     counter = counters.SUCCESS
 
                 self.progress_bar.update_counter(counter,
@@ -172,8 +179,8 @@ class TestRunner:
         # Testing finished
 
         self.success = not any(
-            test_run.result.status in (TestResult.Status.FAILED,
-                                       TestResult.Status.PANIC)
+            test_run.result.status in (TestStatus.FAILED,
+                                       TestStatus.PANIC)
             for test_run in self.test_runs)
 
     def create_snapshot(self):
@@ -207,7 +214,7 @@ class TestRunner:
                 res += f" {'-'*(width-3)} |"
             return res + '\n'
 
-        self.test_runs.sort(key=(lambda test: repr(test)))
+        self.test_runs.sort(key=repr)
         self.test_runs.sort(key=(lambda test: test.result.status.name))
 
         summary = ''
@@ -216,7 +223,7 @@ class TestRunner:
 
         for spec in self.disabled_specs:
             summary += markdown_table_row([spec.test_name,
-                                           TestResult.Status.DISABLED.name])
+                                           TestStatus.DISABLED.name])
 
         for run in self.test_runs:
             summary += markdown_table_row([repr(run),
@@ -224,8 +231,8 @@ class TestRunner:
 
         if not self.success:
             failed_runs = (run for run in self.test_runs
-                           if run.result.status in (TestResult.Status.FAILED,
-                                                    TestResult.Status.PANIC))
+                           if run.result.status in (TestStatus.FAILED,
+                                                    TestStatus.PANIC))
 
             summary += '\n\n'
             summary += '## Errors\n\n'
@@ -316,7 +323,7 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
     if architecture == 'x86_32':
         return_reg = 'EAX'
 
-    tmp_dir = test.get_tmp_dir()
+    tmp_dir = test.tmp_dir
     _clean_tmp_dir(tmp_dir)
 
     log.debug(f'Copying SWEB-snapshot.qcow2 to {tmp_dir}')
@@ -361,11 +368,11 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
 
         if (res == InterruptWatchdog.Status.TIMEOUT
            and not test.spec.expect_timeout):
-            test.result.add_execution_error('Test execution timeout')
+            test.analyzer.add_errors(['Test execution timeout'])
 
         if res == InterruptWatchdog.Status.STOPPED:
-            test.result.add_execution_error('Test killed, because no more '
-                                            'interrupts were comming')
+            test.analyzer.add_errors(['Test killed, because no more '
+                                      'interrupts were comming'])
 
         # Wait a bit for cleanup and debug output to be flushed
         time.sleep(1)
