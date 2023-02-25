@@ -1,10 +1,10 @@
 diff --git a/userspace/tests/mult.c b/userspace/tests/mult.c
-index fd27b643..5c8830c4 100644
+index fd27b643..674d2be0 100644
 --- a/userspace/tests/mult.c
 +++ b/userspace/tests/mult.c
 @@ -1,3 +1,12 @@
 +/*
-+# Test specification
++--- # Test specification
 +category: base
 +description: |
 +    Multiplies two matrices containing pseudo random numbers

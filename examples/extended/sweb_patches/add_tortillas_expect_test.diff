@@ -1,11 +1,11 @@
 diff --git a/userspace/tests/tortillas-expect.c b/userspace/tests/tortillas-expect.c
 new file mode 100644
-index 00000000..227eedd1
+index 00000000..c41c22be
 --- /dev/null
 +++ b/userspace/tests/tortillas-expect.c
 @@ -0,0 +1,28 @@
 +/*
-+# Test specification
++---
 +category: tortillas
 +description: "This test demonstrates tortillas_expect."
 +*/

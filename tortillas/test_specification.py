@@ -57,11 +57,10 @@ class TestSpec():
 
     A valid test specification header requires the following format:
 
-        - First line must be '/*'
-        - Second line must contain 'test spec' or 'test config'
-        - Must be valid yaml
-        - `category` and `description` are required.
-        - Must end with '*/' in its own line.
+        - First line must start a block comment '/*'
+        - First or second line must contain '---' to denote a yaml section
+        - The content of the block commant needs to be vaid yaml
+        - `category` and `description` are required
 
     The constructor of this class will automatically open `test_src_path` and
     parse the yaml header.
@@ -83,18 +82,22 @@ class TestSpec():
     tags: list[str] | None = None
 
     def __init__(self, test_name: str, test_src_path: str):
+        ''':raises: NoTestSpecFound: `yaml.safe_loads` failed'''
         self.test_name = test_name
         self.test_src_path = test_src_path
         self.logger = get_logger(f'Test config for {test_name}', prefix=True)
 
-        config = self._parse_yaml_config_header(test_src_path)
+        try:
+            config = self._parse_yaml_config_header(test_src_path)
+        except yaml.YAMLError as exc:
+            self.logger.error(exc)
+            raise NoTestSpecFound from exc
 
         for field in dataclasses.fields(self):
             if field.name not in config.keys():
                 if field.default is not dataclasses.MISSING:
                     continue
-                self.logger.error(
-                        f'Expected option \"{field.name}\"')
+                self.logger.error(f'Expected option \"{field.name}\"')
                 sys.exit(1)
 
             if field.name == 'tags':
@@ -102,15 +105,15 @@ class TestSpec():
             else:
                 setattr(self, field.name, config[field.name])
 
-    def _parse_yaml_config_header(self, test_src_path: str) -> dict:
-        ''':raises: NoTestSpecFound: if no valid yaml header is found.'''
+    @staticmethod
+    def _parse_yaml_config_header(test_src_path: str) -> dict:
+        ''':raises: NoTestSpecFound: no valid yaml header was found'''
         test_config_raw = ''
-        out: dict = {}
         with open(test_src_path, 'r') as test_src_file:
             lines = test_src_file.readlines()
-            if ('/*' not in lines[0] or
-                    ('test spec' not in lines[1].lower() and
-                     'test config' not in lines[1].lower())):
+            if (not lines[0].startswith('/*') or
+                    ('---' not in lines[0] and
+                     '---' not in lines[1])):
                 raise NoTestSpecFound
 
             for line in lines[1:]:
@@ -118,10 +121,4 @@ class TestSpec():
                     break
                 test_config_raw += line
 
-            try:
-                out = yaml.safe_load(test_config_raw)
-            except yaml.YAMLError as exc:
-                self.logger.error(exc)
-                raise NoTestSpecFound
-
-            return out
+            return yaml.safe_load(test_config_raw)

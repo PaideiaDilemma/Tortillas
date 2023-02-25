@@ -1,11 +1,11 @@
 diff --git a/userspace/tests/bad-exit-code.c b/userspace/tests/bad-exit-code.c
 new file mode 100644
-index 00000000..e2cbeb62
+index 00000000..1440f771
 --- /dev/null
 +++ b/userspace/tests/bad-exit-code.c
 @@ -0,0 +1,12 @@
 +/*
-+# Test specification
++---
 +category: panic
 +description: "Dummy test, to demo wrong exit code"
 +*/
@@ -18,12 +18,12 @@ index 00000000..e2cbeb62
 +}
 diff --git a/userspace/tests/panic1.c b/userspace/tests/panic1.c
 new file mode 100644
-index 00000000..af3370ff
+index 00000000..b795ee40
 --- /dev/null
 +++ b/userspace/tests/panic1.c
 @@ -0,0 +1,12 @@
 +/*
-+# Test specification
++---
 +category: panic
 +description: "Dummy test, to demo a kernel panic triggered by exit(1)"
 +*/
@@ -36,12 +36,12 @@ index 00000000..af3370ff
 +}
 diff --git a/userspace/tests/panic2.c b/userspace/tests/panic2.c
 new file mode 100644
-index 00000000..12d0edc2
+index 00000000..212af336
 --- /dev/null
 +++ b/userspace/tests/panic2.c
 @@ -0,0 +1,12 @@
 +/*
-+# Test specification
++---
 +category: panic
 +description: "Dummy test, to demo a locking error triggered by exit(2)"
 +*/
@@ -54,12 +54,12 @@ index 00000000..12d0edc2
 +}
 diff --git a/userspace/tests/timeout.c b/userspace/tests/timeout.c
 new file mode 100644
-index 00000000..3bb47bd0
+index 00000000..a5529935
 --- /dev/null
 +++ b/userspace/tests/timeout.c
 @@ -0,0 +1,15 @@
 +/*
-+# Test specification
++---
 +category: panic
 +description: "Dummy test, to demo a test timeout"
 +timeout: 20
@@ -75,15 +75,14 @@ index 00000000..3bb47bd0
 +}
 diff --git a/userspace/tests/unknown_command.c b/userspace/tests/unknown_command.c
 new file mode 100644
-index 00000000..7b88b52e
+index 00000000..e82bc6ba
 --- /dev/null
 +++ b/userspace/tests/unknown_command.c
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,11 @@
 +/*
-+# Test specification
++---
 +category: panic
 +description: "Dummy test, to demo unknown command, when the test name comtains an underscore"
-+
 +*/
 +
 +#include "stdlib.h"
@@ -93,12 +92,12 @@ index 00000000..7b88b52e
 +}
 diff --git a/userspace/tests/userspace-assert.c b/userspace/tests/userspace-assert.c
 new file mode 100644
-index 00000000..f64f899d
+index 00000000..3fec85c0
 --- /dev/null
 +++ b/userspace/tests/userspace-assert.c
 @@ -0,0 +1,12 @@
 +/*
-+# Test specification
++---
 +category: panic
 +description: "Dummy test, to demo userspace asserts"
 +*/
