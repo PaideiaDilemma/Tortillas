@@ -25,6 +25,9 @@ class AnalyzeConfigEntry:
 
     pattern_compiled: re.Pattern | None = None
 
+    def __post_init__(self):
+        self.compile_pattern()
+
     def compile_pattern(self) -> AnalyzeConfigEntry:
         '''Use `re.compile`, to compile the `self.pattern`.'''
         self.pattern_compiled = re.compile(self.pattern, re.DOTALL)
@@ -75,7 +78,7 @@ class TortillasConfig:
                     sys.exit(1)
 
                 elif field.name == 'analyze':
-                    self.analyze = [AnalyzeConfigEntry(**c).compile_pattern()
+                    self.analyze = [AnalyzeConfigEntry(**c)
                                     for c in config.pop('analyze')]
                 else:
                     self.logger.debug(f'{field.name}: {config[field.name]}')
