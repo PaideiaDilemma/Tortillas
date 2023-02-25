@@ -232,7 +232,8 @@ class TestRunner:
         if not self.success:
             failed_runs = (run for run in self.test_runs
                            if run.result.status in (TestStatus.FAILED,
-                                                    TestStatus.PANIC))
+                                                    TestStatus.PANIC,
+                                                    TestStatus.TIMEOUT))
 
             summary += '\n\n'
             summary += '## Errors\n\n'
