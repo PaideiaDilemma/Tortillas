@@ -215,7 +215,7 @@ class TestRunner:
             return res + '\n'
 
         self.test_runs.sort(key=repr)
-        self.test_runs.sort(key=(lambda test: test.result.status.name))
+        self.test_runs.sort(key=(lambda test: test.result.status.value))
 
         summary = ''
         summary += markdown_table_row(['Test run', 'Result'])
@@ -368,7 +368,8 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
 
         if (res == InterruptWatchdog.Status.TIMEOUT
            and not test.spec.expect_timeout):
-            test.analyzer.add_errors(['Test execution timeout'])
+            test.analyzer.add_errors(['Test execution timeout'],
+                                     status=TestStatus.TIMEOUT)
 
         if res == InterruptWatchdog.Status.STOPPED:
             test.analyzer.add_errors(['Test killed, because no more '

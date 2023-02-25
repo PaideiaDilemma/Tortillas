@@ -13,11 +13,11 @@ from .test_specification import TestSpec
 
 class TestStatus(Enum):
     '''Represents the outcome of a test run.'''
-    DISABLED = 1
-    SUCCESS = 2
-    PANIC = 3
-    FAILED = 4
-    NOT_RUN = 99
+    PANIC = 1
+    FAILED = 2
+    TIMEOUT = 3
+    SUCCESS = 4
+    DISABLED = 5
 
 
 @dataclasses.dataclass
@@ -46,12 +46,10 @@ class LogAnalyzer:
 
         self.disabled = test_spec.disabled
 
-        self.result = TestResult(TestStatus.NOT_RUN)
+        self.result = TestResult(TestStatus.SUCCESS)
 
     def analyze(self, log_data: dict[str, list[str]]) -> TestResult:
         '''Analyze `log_data` using the analyze configuration.'''
-        assert self.result.status == TestStatus.NOT_RUN
-        self.result.status = TestStatus.SUCCESS
         for entry_name, logs in log_data.items():
             config_entry = self._get_config_entry_by_name(entry_name)
             status = (None if not config_entry.set_status else
