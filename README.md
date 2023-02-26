@@ -7,10 +7,10 @@
 
 </div>
 
-Might be useful for students doing the [operating systems course](https://www.iaik.tugraz.at/course/operating-systems) at TU Graz.
+This program might be useful for students doing the [operating systems course](https://www.iaik.tugraz.at/course/operating-systems) at TU Graz.
 
 Tortillas is here to help with testing your sweb code.
-It aims to makes it easier for teams to do test driven development.
+It aims to makes it easier for teams to do test driven development. Tortillas takes your test cases and runs them in individual Qemu instances, while logging the output and monitoring for errors.
 
 If you just want to try this out, go to [Quickstart](#quickstart). \
 If your team wants to use this, follow [Getting started](#getting-started).
@@ -21,8 +21,8 @@ If your team wants to use this, follow [Getting started](#getting-started).
 - Test summary with errors from all test runs
 - Configure how debug logs get parsed and interpreted
 - Fancy progress bar
-- Uses qemu snapshots
-- Individual test configuration via a test headers (timeout, expected exit codes)
+- Uses qemu snapshots for faster bootup
+- Individual test configuration via test headers (timeout, expected exit codes)
 - Detection of bootup, test completion and kernel panics
 
 ## Dependencies
@@ -47,7 +47,9 @@ If your team wants to use this, follow [Getting started](#getting-started).
 
 Check out the the latest run of the
 [demo workflow](https://github.com/PaideiaDilemma/Tortillas/actions/workflows/demo_ci.yml?query=branch%3Amain),
-for examples of tortillas in action.
+for examples of tortillas in GitHub Actions.
+
+If you create a working GitLab CI workflow, we'd be happy if you could contribute it to Tortillas.
 
 ## Installation
 
@@ -77,7 +79,7 @@ tortillas
 
 ## Getting started
 
-#### Why does tortillas require changes made to sweb?
+#### Why does tortillas require sweb to be changed?
 In short, because it makes detection of bootup and test completion
 easier and more reliable. For a better answer see [Interrupt/Syscall detection](#interruptsyscall-detection).
 
@@ -125,14 +127,10 @@ Verify the setup, by [running tortillas](#running-tortillas). \
 You can now check out [Test specifications](#test-specifications) and add test specifications
 to your tests.
 
-### CI/CD
-[TODO]
-
 ## Cli Usage
 See `tortillas --help`
 
-Note: you do not have to install tortillas necessarily. You can also run it like this,
-if you are currently in the Tortillas source directory.
+Note: You do not necessarily have to install tortillas. You can also run it from the Tortillas source directory, like this:
 ```
 python -m tortillas -S <path_to_your_sweb_repo>
 ```
@@ -146,6 +144,7 @@ tortillas
 tortillas -S <path_to_your_sweb_repo>
 ```
 ###### Run a test selection
+Tortillas supports running tests selected by tag, category or glob pattern.
 ```
 tortillas --tag pthread         # Run all tests tagged with 'pthread'
 tortillas --category malloc,brk # Run all tests in the 'malloc' and 'brk' categories
@@ -153,8 +152,7 @@ tortillas --glob test*          # Run all tests, that match 'userspace/tests/tes
 ```
 
 ## Tortillas config
-
-The tortillas-config.yml file configures tortillas to fit your sweb.
+The `tortillas-config.yml` file configures tortillas to fit your sweb.
 
 Per default it is expected to be at `<path_to_your_sweb_repo>/tortillas-config.yml`.\
 You can specify the config path with `tortillas -C <path_to_tortillas_config>`
@@ -232,7 +230,7 @@ The pattern for the config entry for `exit_codes` has to be changed as well:
   }
   ```
 
-### Supported fields:
+### Supported fields in `tortillas-config.yml`:
 
 - `threads: int` - Number of tests to run in parallel
 - `bootup_timeout_secs: int` - Seconds until bootup timeout
@@ -269,7 +267,7 @@ Tortillas requires a test header in yaml format, that contains information about
 the test and configurations of the test, if needed.
 Reason for making it required is to force you to describe your tests.
 
-A nice side effect of this is, that you can compile all your specifications into a summary of all your tests at the end of an assignment. Currently you can adapt [`salsa.py`](salsa.py) to do that, but it would be cool to integrate it into tortillas.
+A nice side effect of this is, that you can compile all your specifications into a summary of all your tests at the end of an assignment. Currently this is done by [`salsa.py`](salsa.py), but it would be cool to integrate it into tortillas.
 
 We can also directly specify test behavior in test specifications.
 For example:
@@ -302,7 +300,7 @@ If those conditions are not met, tortillas will skip the file.
 If they are met, lines until `*/` will be parsed as yaml and it will
 complain about missing fields.
 
-## How it works
+## How Tortillas works under the hood
 
 ### Interrupt/Syscall detection
 
