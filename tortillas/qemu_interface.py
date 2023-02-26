@@ -11,6 +11,7 @@ import sys
 import time
 import shlex
 import subprocess
+from select import select
 from logging import Logger
 from enum import Enum
 
@@ -180,7 +181,7 @@ class InterruptWatchdog:
         STOPPED = 3
 
     def __init__(self, tmp_dir: str, qemu_interface: QemuInterface):
-        self.interrupt_logfile = f'{tmp_dir}/int.log'
+        self.interrupt_logpipe = f'{tmp_dir}/int.log'
         self.logger = qemu_interface.logger
 
         self.qemu_interface = qemu_interface
@@ -191,18 +192,22 @@ class InterruptWatchdog:
     def start(self):
         '''Start logging interrupts.'''
         self.clean()
+        os.mkfifo(self.interrupt_logpipe)
         self.qemu_interface.monitor_command(
-                f'logfile {self.interrupt_logfile}\n')
+                f'logfile {self.interrupt_logpipe}\n')
         self.qemu_interface.monitor_command('log int\n')
 
     def clean(self):
-        '''Clear/Touch the interrupt logfile.'''
-        open(self.interrupt_logfile, 'w').close()  # touch int.log
+        '''Delete the interrupt logfile.'''
+        try:
+            os.remove(self.interrupt_logpipe)
+        except FileNotFoundError:
+            pass
 
     def stop(self):
         '''Stop logging interrupts and remove the logfile.'''
         self.qemu_interface.monitor_command('log none\n')
-        os.remove(self.interrupt_logfile)
+        self.clean()
 
     def wait_until(self, int_num: str, int_regs: dict[str, int],
                    timeout: int) -> Status:
@@ -210,37 +215,42 @@ class InterruptWatchdog:
         Loop until we find an interrupt, that matches `int_num` and `int_regs`.
         If `int_regs` is empty it will match the first interrupt with `int_num`.
         '''
-        max_iterations = int(timeout / self.sleep_time)
+        start_time = time.time()
 
-        iterations_file_unchanged = 0
+        def timeout_exceeded() -> bool:
+            return time.time() - start_time >= timeout
 
-        for _ in range(max_iterations):
-            previous_position = self.file_pos
-            time.sleep(self.sleep_time)
+        with open(self.interrupt_logpipe, 'r') as logpipe:
+            while True:
+                if timeout_exceeded():
+                    self.logger.error('Timeout!')
+                    return self.Status.TIMEOUT
 
-            with open(self.interrupt_logfile, 'r') as logfile:
-                logfile.seek(self.file_pos)
-                lines = logfile.readlines()
-                interrupt = self.search_interrupt(int_num, int_regs, lines)
-                if interrupt:
-                    return self.Status.OK
-                self.file_pos = logfile.tell()
-
-            if self.file_pos == previous_position:
-                if iterations_file_unchanged > 10:
+                poll = select([logpipe], [], [], 10)[0]
+                if not poll:
                     self.logger.error('Interrupts stopped... Panic?')
                     return self.Status.STOPPED
 
-                iterations_file_unchanged += 1
-            else:
-                iterations_file_unchanged = 0
+                frame = [logpipe.readline()]
+                while 'EFER=' not in frame[-1]:
+                    frame.append(logpipe.readline())
 
-        self.logger.error(f'Timeout! {int_num}: {int_regs}')
+                frame_start = next((i for i in range(len(frame))
+                                    if 'v=' in frame[i]), 0)
 
-        return self.Status.TIMEOUT
+                if f'v={int_num}' not in frame[frame_start]:
+                    continue
+
+                cpu_dump_string = ''.join(line.strip('\n')
+                                          for line in frame[frame_start+1:])
+
+                registers = self.parse_registers(cpu_dump_string)
+
+                if self.match_registers(int_regs, registers):
+                    return self.Status.OK
 
     @staticmethod
-    def parse_interrupt(interrupt: str) -> dict[str, int]:
+    def parse_registers(interrupt: str) -> dict[str, int]:
         '''
         This function parses the registers of an interrupt into a dict,
         where the key is the name of the register and
@@ -283,29 +293,3 @@ class InterruptWatchdog:
             if search_regs[reg] != val:
                 return False
         return True
-
-    @staticmethod
-    def search_interrupt(int_num: int, search_regs: dict[str, int],
-                         lines: list[str]) -> dict[str, int] | None:
-        '''Search for a specific interrupt in `lines`.'''
-        for index, line in enumerate(lines):
-            if f'v={int_num}' not in line:
-                continue
-
-            # A block is usually 20 lines long.
-            # If that is not the case,
-            # we search for the next interrupt in a range from 1-30
-            block_size = 0
-            for block_size in [21] + list(range(1, 30)):
-                if (index + block_size + 1 >= len(lines) or
-                        'v=' in lines[index + block_size]):
-                    break
-
-            interrupt = ''.join((line.strip('\n') + ' '
-                                 for line in lines[index + 1:
-                                                   index + block_size]))
-
-            registers = InterruptWatchdog.parse_interrupt(interrupt)
-            if InterruptWatchdog.match_registers(search_regs, registers):
-                return registers
-        return None
