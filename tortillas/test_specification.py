@@ -59,7 +59,7 @@ class TestSpec():
 
         - First line must start a block comment '/*'
         - First or second line must contain '---' to denote a yaml section
-        - The content of the block commant needs to be vaid yaml
+        - The content of the block command needs to be valid yaml
         - `category` and `description` are required
 
     The constructor of this class will automatically open `test_src_path` and

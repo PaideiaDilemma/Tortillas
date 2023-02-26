@@ -38,7 +38,7 @@ def test_parsing_int_splitting():
     assert '1237619379' in log_data[config_entry.name]
 
 
-def test_mutliple_config_entries():
+def test_multiple_config_entries():
     config = [
             AnalyzeConfigEntry(name='a', scope='SYSCALL',
                                pattern='(.*)', mode=''),

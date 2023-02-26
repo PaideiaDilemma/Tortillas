@@ -136,7 +136,7 @@ class QemuInterface():
         written_n = self.input.write(command)
         self.input.flush()
         # I ran into some problems without this sleep...
-        # Somtimes got "tesT-pthread.." instead of "test_pthread"
+        # Sometimes got "tesT-pthread.." instead of "test_pthread"
         time.sleep(0.2)
         if len(command) != written_n:
             self.logger.error(
@@ -162,14 +162,14 @@ class QemuInterface():
 
 class InterruptWatchdog:
     '''
-    Use qemu interrupt logging, to wait for specfic events and
+    Use qemu interrupt logging, to wait for specific events and
     detect kernel panics.
 
-    This class parses the ouput of the qemu monitor "log int" command.
+    This class parses the output of the qemu monitor "log int" command.
     One can wait for an interrupt, by passing an interrupt number and
     a set of registers to the `wait_until` member function.
 
-    Note, that interrupt logs contain some interresting metadata, that one
+    Note, that interrupt logs contain some interesting metadata, that one
     could collect in here.
     '''
 
@@ -294,7 +294,7 @@ class InterruptWatchdog:
 
             # A block is usually 20 lines long.
             # If that is not the case,
-            # we search for the next inerrupt in a range from 1-30
+            # we search for the next interrupt in a range from 1-30
             block_size = 0
             for block_size in [21] + list(range(1, 30)):
                 if (index + block_size + 1 >= len(lines) or

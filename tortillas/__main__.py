@@ -62,7 +62,7 @@ def main():
                         help='Glob of tests in the testfolder\n'
                              'e.g. -g test_pthread* '
                               '(tests userspace/tests/test_pthread*.c)\n'
-                              'Note: zsh users must excape: test_pthread\\*',
+                              'Note: zsh users must escape: test_pthread\\*',
                         default='*')
 
     parser.add_argument('-c', '--category', type=str, nargs='*',
@@ -72,7 +72,7 @@ def main():
                         help='Tag or list of tags to test')
 
     parser.add_argument('-r', '--repeat', type=int,
-                        help='Run the specified tests mutiple times. '
+                        help='Run the specified tests multiple times. '
                              '-r 2 will run all tests 2 times',
                         default=1)
 

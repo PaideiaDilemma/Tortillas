@@ -31,7 +31,7 @@ class TestResult:
 class LogAnalyzer:
     '''
     Represent the result of a TestRun.
-    The actuall result is determined by analyzing log data using
+    The actual result is determined by analyzing log data using
     the config entries in `TortillasConfig.analyze`.
     '''
 

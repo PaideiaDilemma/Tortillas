@@ -31,7 +31,7 @@ class LogParser:
             |                           # or
                 KERNEL\sPANIC:\s        # KERNEL PANIC:
             )
-            (.+?                    # Lazy match everthing until
+            (.+?                    # Lazy match everything until
                 (?=
                     \[[A-Z_]+\s*\]      # Next log identifier
                 |                       # or

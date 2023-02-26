@@ -1,4 +1,4 @@
-'''This module provides some util functions.'''
+'''This module provides some utility functions.'''
 
 from __future__ import annotations
 

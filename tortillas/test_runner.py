@@ -22,7 +22,7 @@ from .qemu_interface import QemuInterface, InterruptWatchdog
 
 class TestRun:
     '''
-    A wrapper around TestSpec and TestResult, that respresents a test run.
+    A wrapper around TestSpec and TestResult, that represents a test run.
     '''
 
     def __init__(self, test_spec: TestSpec, num: int, config: TortillasConfig):
@@ -117,7 +117,7 @@ class TestRunner:
         counters = self.progress_bar.Counter
 
         def thread_callback(test_run: TestRun):
-            '''Handle test completion and test retrys.'''
+            '''Handle test completion and test retry.'''
             with lock:
                 running_tests.pop(repr(test_run))
 
@@ -145,7 +145,7 @@ class TestRunner:
         def run_test(test_queue: list[TestRun]):
             '''
             Run a single test in a dedicated thread,
-            by poping a test run from `test_queue` and passing it to `_run`.
+            by popping a test run from `test_queue` and passing it to `_run`.
             '''
             with lock:
                 test = test_queue.pop()
@@ -194,7 +194,7 @@ class TestRunner:
         '''
         Get a simple summary of all test runs.
         The summary contains table of tests with their run status and
-        a summary of all errors that occured.
+        a summary of all errors that occurred.
         '''
         def markdown_table_row(cols: list[str],
                                widths: list[int] = [40, 20]) -> str:
@@ -374,7 +374,7 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
 
         if res == InterruptWatchdog.Status.STOPPED:
             test.analyzer.add_errors(['Test killed, because no more '
-                                      'interrupts were comming'])
+                                      'interrupts were coming'])
 
         # Wait a bit for cleanup and debug output to be flushed
         time.sleep(1)

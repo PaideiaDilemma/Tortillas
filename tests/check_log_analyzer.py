@@ -18,7 +18,7 @@ def _get_test_spec():
     return TestSpec('pytest', './tests/assets/test_spec.txt')
 
 
-def test_analzye_add_as_error():
+def test_analyze_add_as_error():
     config_entry = AnalyzeConfigEntry(name='test',
                                       scope='SYSCALL',
                                       pattern=r'(.*)',
@@ -37,7 +37,7 @@ def test_analzye_add_as_error():
     assert analyzer.result.status == TestStatus.PANIC
 
 
-def test_analzye_exit_codes():
+def test_analyze_exit_codes():
     log_data = {'test': ['1', '2', '3', '4']}
 
     config_entry = AnalyzeConfigEntry(name='test',
@@ -76,7 +76,7 @@ def test_expect_stdout():
     analyzer.analyze(log_data)
 
     # test_result.errors:
-    # 1x Expected ouput: B
+    # 1x Expected output: B
     # 1x Actual output: A
     assert len(analyzer.result.errors) == 2
 

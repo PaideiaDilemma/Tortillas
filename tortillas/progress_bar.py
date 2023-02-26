@@ -11,7 +11,7 @@ class ProgressBar:
     A progress bar that keeps track of running, failing and
     successfully completed tests.
 
-    Relies on the `englighten` module.
+    Relies on the `enlighten` module.
     If it is not present, or `no_progress_bar` is specified,
     this class will act as a dummy.
     '''
@@ -108,7 +108,7 @@ class ProgressBar:
                        incr=1):
         '''
         Update a counter by `incr`. If `from_counter` is specified,
-        `incr` will additionally be substracted from `from_counter`.
+        `incr` will additionally be subtracted from `from_counter`.
         '''
         if self.no_bar:
             return
