@@ -21,7 +21,7 @@ If your team wants to use this, follow [Getting started](#getting-started).
 - Test summary with errors from all test runs
 - Configure how debug logs get parsed and interpreted
 - Fancy progress bar
-- Uses qemu snapshots for faster bootup
+- Uses qemu snapshots to avoid booting multiple times
 - Individual test configuration via test headers (timeout, expected exit codes)
 - Detection of bootup, test completion and kernel panics
 
@@ -47,9 +47,7 @@ If your team wants to use this, follow [Getting started](#getting-started).
 
 Check out the the latest run of the
 [demo workflow](https://github.com/PaideiaDilemma/Tortillas/actions/workflows/demo_ci.yml?query=branch%3Amain),
-for examples of tortillas in GitHub Actions.
-
-If you create a working GitLab CI workflow, we'd be happy if you could contribute it to Tortillas.
+as an example of how tortillas works.
 
 ## Installation
 
@@ -126,6 +124,9 @@ Verify the setup, by [running tortillas](#running-tortillas). \
 
 You can now check out [Test specifications](#test-specifications) and add test specifications
 to your tests.
+
+### CI/CD
+[TODO]
 
 ## Cli Usage
 See `tortillas --help`
