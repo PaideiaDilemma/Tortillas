@@ -33,13 +33,10 @@ If your team wants to use this, follow [Getting started](#getting-started).
 
 ## Demo
 
-<figure>
-
 ![](.assets/demo.gif)
 
-<figcaption>
-<small>Note: After tortillas ran, <a href=https://github.com/joeyespo/grip>grip</a> was used to display tortillas_summary.md</small>
-</figcaption>
+In this animation, tortillas runs tests from the examples \
+Note: After it ran, [grip](https://github.com/joeyespo/grip) was used to display tortillas_summary.md
 
 </figure>
 
