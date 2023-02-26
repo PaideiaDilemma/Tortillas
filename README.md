@@ -35,7 +35,7 @@ If your team wants to use this, follow [Getting started](#getting-started).
 
 ![](.assets/demo.gif)
 
-In this animation, tortillas runs tests from the examples \
+In this animation, Tortillas runs tests from the examples. \
 Note: After it ran, [grip](https://github.com/joeyespo/grip) was used to display tortillas_summary.md
 
 </figure>
@@ -122,8 +122,25 @@ Verify the setup, by [running tortillas](#running-tortillas). \
 You can now check out [Test specifications](#test-specifications) and add test specifications
 to your tests.
 
-### CI/CD
-[TODO]
+### CI/CD _(Optional)_
+
+If you want a CI/CD pipeline, you have the following possibilities:
+
+#### 1. Set up a [gitlab runner](https://docs.gitlab.com/runner/)
+This requires a publicly accessible server. If you have your own runner, you can add it to your repository.
+
+You can use a workflow similar to [`examples/.gitlab-ci.yml`](examples/.gitlab-ci.yml)
+This might be the best solution, but has the caviats of _you needing a server_ and _not being able to upload artifacts_ (I think it is disabled on IAIK gitlab).
+
+#### 2. Set up a [repository mirror](https://docs.gitlab.com/ee/user/project/repository/mirror/)
+It is possible to mirror your gitlab sweb repo to github,
+where you can run a workflow with Github Actions, similar to the one in this
+repository ([`.github/workflows/demo_ci.yml`](.github/workflows/demo_ci.yml)).
+Make sure you use a __private repo__ though.
+
+Of course, this way, your pipeline will not be visible within gitlab.
+
+<sub><sup>You you have another way of running a CI/CD pipeline, add it here!</sup></sub>
 
 ## Cli Usage
 See `tortillas --help`
