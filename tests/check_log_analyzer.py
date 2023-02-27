@@ -9,7 +9,6 @@ from tortillas.qemu_interface import InterruptWatchdog
 
 def _get_log_data(config_entry: AnalyzeConfigEntry):
     log_parser = LogParser(log_file_path='./tests/assets/out_log.txt',
-                           logger=logging.getLogger(),
                            config=[config_entry])
 
     return log_parser.parse()

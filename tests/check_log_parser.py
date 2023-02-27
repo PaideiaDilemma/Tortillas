@@ -10,7 +10,6 @@ def test_log_splitting():
                                       mode='').compile_pattern()
 
     log_parser = LogParser(log_file_path='./tests/assets/out_log.txt',
-                           logger=logging.getLogger(),
                            config=[config_entry])
 
     log_data = log_parser.parse()
@@ -29,7 +28,6 @@ def test_parsing_int_splitting():
     config_entry.compile_pattern()
 
     log_parser = LogParser(log_file_path='./tests/assets/out_log.txt',
-                           logger=logging.getLogger(),
                            config=[config_entry])
 
     log_data = log_parser.parse()
@@ -52,7 +50,6 @@ def test_multiple_config_entries():
         entry.compile_pattern()
 
     log_parser = LogParser(log_file_path='./tests/assets/out_log.txt',
-                           logger=logging.getLogger(),
                            config=config)
 
     log_data = log_parser.parse()
