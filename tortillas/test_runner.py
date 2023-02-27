@@ -32,30 +32,24 @@ class TestRun:
 
         self.logger = get_logger(repr(self), prefix=True)
 
-        self.analyzer = LogAnalyzer(test_repr=repr(self),
-                                    test_spec=self.spec,
-                                    config=config.analyze)
+        self.config = config
+        self.result = TestResult(TestStatus.NOT_RUN)
 
         tmp_dir_name = repr(self).lower().replace(' ', '-')
         self.tmp_dir = rf'{TEST_RUN_DIR}/{tmp_dir_name}'
 
-    @property
-    def result(self):
-        '''
-        The test result. `result.status` will equal `TestStatus.NOT_RUN`,
-        until `this.analyze()` is called.
-        '''
-        return self.analyzer.result
-
-    def analyze(self):
+    def analyze(self, ir_watchdog_status: InterruptWatchdog.Status):
         '''
         Call this to parse and analyze the logfile of this test run.
         '''
         parser = LogParser(log_file_path=f'{self.tmp_dir}/out.log',
-                           logger=self.logger,
-                           config=self.analyzer.config)
+                           config=self.config.analyze)
 
-        self.analyzer.analyze(parser.parse())
+        analyzer = LogAnalyzer(test_repr=repr(self), test_spec=self.spec,
+                               config=self.config.analyze)
+
+        self.logger.info('Analyzing test result')
+        self.result = analyzer.analyze(parser.parse(), ir_watchdog_status)
 
     def reset(self):
         '''
@@ -288,7 +282,7 @@ def _create_snapshot(architecture: str, label: str, config: TortillasConfig):
         log.debug('Waiting for bootup...')
 
         # Wait for the interrupt, that singals bootup completion
-        res = qemu.interrupt_watchdog.wait_until(
+        status = qemu.interrupt_watchdog.wait_until(
             int_num=INT_SYSCALL,
             int_regs={
                 return_reg: config.sc_tortillas_bootup
@@ -296,8 +290,8 @@ def _create_snapshot(architecture: str, label: str, config: TortillasConfig):
             timeout=config.bootup_timeout_secs
         )
 
-        if res in (InterruptWatchdog.Status.TIMEOUT,
-                   InterruptWatchdog.Status.STOPPED):
+        if status in (InterruptWatchdog.Status.TIMEOUT,
+                      InterruptWatchdog.Status.STOPPED):
             log.info('Boot attempt failed, dumping logfile!')
             bootup_error = True
 
@@ -336,6 +330,8 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
     log.debug(
         f'Starting qemu snapshot {QEMU_VMSTATE_TAG} (arch={architecture})')
 
+    status: InterruptWatchdog.Status
+
     with QemuInterface(
             tmp_dir=tmp_dir,
             qcow2_path=snapshot_path,
@@ -359,7 +355,7 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
             timeout = test.spec.timeout
 
         # Wait for the interrupt, that signals program completion
-        res = qemu.interrupt_watchdog.wait_until(
+        status = qemu.interrupt_watchdog.wait_until(
             int_num=INT_SYSCALL,
             int_regs={
                 return_reg: config.sc_tortillas_finished
@@ -367,19 +363,10 @@ def _run(test: TestRun, architecture: str, config: TortillasConfig,
             timeout=timeout
         )
 
-        if (res == InterruptWatchdog.Status.TIMEOUT
-           and not test.spec.expect_timeout):
-            test.analyzer.add_errors(['Test execution timeout'],
-                                     status=TestStatus.TIMEOUT)
-
-        if res == InterruptWatchdog.Status.STOPPED:
-            test.analyzer.add_errors(['Test killed, because no more '
-                                      'interrupts were coming'])
-
         # Wait a bit for cleanup and debug output to be flushed
         time.sleep(1)
 
-    test.analyze()
+    test.analyze(status)
 
     log.info('Done!')
     if callback:

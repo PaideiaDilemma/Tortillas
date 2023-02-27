@@ -4,6 +4,7 @@ from tortillas.log_parser import LogParser
 from tortillas.test_specification import TestSpec
 from tortillas.tortillas_config import AnalyzeConfigEntry
 from tortillas.log_analyzer import LogAnalyzer, TestStatus
+from tortillas.qemu_interface import InterruptWatchdog
 
 
 def _get_log_data(config_entry: AnalyzeConfigEntry):
@@ -31,10 +32,10 @@ def test_analyze_add_as_error():
                            test_spec=_get_test_spec(),
                            config=[config_entry])
 
-    analyzer.analyze(log_data)
+    result = analyzer.analyze(log_data, InterruptWatchdog.Status.OK)
 
-    assert analyzer.result.errors
-    assert analyzer.result.status == TestStatus.PANIC
+    assert result.errors
+    assert result.status == TestStatus.PANIC
 
 
 def test_analyze_exit_codes():
@@ -50,14 +51,14 @@ def test_analyze_exit_codes():
                            test_spec=_get_test_spec(),
                            config=[config_entry])
 
-    analyzer.analyze(log_data)
+    result = analyzer.analyze(log_data, InterruptWatchdog.Status.OK)
 
     # test_result.errors:
     # 5x Unexpected exit code {code}
     # 1x Expected exit code(s) {codes}
-    assert len(analyzer.result.errors) == 5
+    assert len(result.errors) == 5
 
-    assert analyzer.result.status == TestStatus.FAILED
+    assert result.status == TestStatus.FAILED
 
 def test_expect_stdout():
     log_data = {'test': ['TORTILLAS EXPECT: A', 'A',
@@ -73,11 +74,11 @@ def test_expect_stdout():
                            test_spec=_get_test_spec(),
                            config=[config_entry])
 
-    analyzer.analyze(log_data)
+    result = analyzer.analyze(log_data, InterruptWatchdog.Status.OK)
 
     # test_result.errors:
     # 1x Expected output: B
     # 1x Actual output: A
-    assert len(analyzer.result.errors) == 2
+    assert len(result.errors) == 2
 
-    assert analyzer.result.status == TestStatus.FAILED
+    assert result.status == TestStatus.FAILED

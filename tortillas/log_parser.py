@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import logging
 
 from .utils import escape_ansi
 from .tortillas_config import AnalyzeConfigEntry
@@ -12,7 +11,7 @@ from .tortillas_config import AnalyzeConfigEntry
 class LogParser:
     '''Configurable parser for the log output of SWEB.'''
 
-    def __init__(self, log_file_path: str, logger: logging.Logger,
+    def __init__(self, log_file_path: str,
                  config: list[AnalyzeConfigEntry]):
         '''
         Setup the parser. The parser will parse the file at `log_file_path`
@@ -20,7 +19,6 @@ class LogParser:
         '''
 
         self.log_file_path = log_file_path
-        self.logger = logger
 
         self.config: list[AnalyzeConfigEntry] = config
 
@@ -50,7 +48,6 @@ class LogParser:
         '''
         log_data: dict[str, list[str]] = {entry.name: []
                                           for entry in self.config}
-        self.logger.info('Parsing test output')
 
         with open(self.log_file_path, 'rb') as logfile:
             escaped_logs = escape_ansi(logfile.read()).decode()
