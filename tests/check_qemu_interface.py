@@ -19,7 +19,7 @@ def test_waiting_for_bootup():
 
         res = qemu.interrupt_watchdog.wait_until(int_num=80,
                                                  int_regs={
-                                                    'RAX': 69420
+                                                    'RAX': 1337
                                                     },
                                                  timeout=10)
 
@@ -50,7 +50,7 @@ def test_run_mult():
 
         res = qemu.interrupt_watchdog.wait_until(int_num=80,
                                                  int_regs={
-                                                    'RAX': 69420
+                                                    'RAX': 1337
                                                     },
                                                  timeout=10)
 
@@ -61,7 +61,7 @@ def test_run_mult():
 
         res = qemu.interrupt_watchdog.wait_until(int_num=80,
                                                  int_regs={
-                                                    'RAX': 42069
+                                                    'RAX': 1338
                                                     },
                                                  timeout=20)
 
