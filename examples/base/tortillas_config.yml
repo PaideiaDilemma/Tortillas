@@ -13,8 +13,8 @@ bootup_timeout_secs: 20
 default_test_timeout_secs: 120
 
 # Syscall numbers to detect bootup and test completion
-sc_tortillas_bootup: 69420
-sc_tortillas_finished: 42069
+sc_tortillas_bootup: 1337
+sc_tortillas_finished: 1338
 
 # The analyze config field contains entries that describe
 # how tortillas parses sweb logs.

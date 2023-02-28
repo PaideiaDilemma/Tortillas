@@ -1,45 +1,54 @@
 diff --git a/common/include/kernel/syscall-definitions.h b/common/include/kernel/syscall-definitions.h
-index dd99d197..86ae9901 100644
+index dd99d197..a3c6aadc 100644
 --- a/common/include/kernel/syscall-definitions.h
 +++ b/common/include/kernel/syscall-definitions.h
 @@ -17,3 +17,5 @@
  #define sc_createprocess 191
  #define sc_trace 252
-
-+#define sc_tortillas_bootup 69420
-+#define sc_tortillas_finished 42069
+ 
++#define sc_tortillas_bootup 1337
++#define sc_tortillas_finished 1338
 diff --git a/common/source/kernel/Syscall.cpp b/common/source/kernel/Syscall.cpp
-index 10e10a31..b0b496aa 100644
+index 964cd5b4..e3dab280 100644
 --- a/common/source/kernel/Syscall.cpp
 +++ b/common/source/kernel/Syscall.cpp
-@@ -50,6 +50,10 @@ size_t Syscall::syscallException(size_t syscall_number, size_t arg1, size_t arg2
-     case sc_pseudols:
-       pseudols((const char*) arg1, (char*) arg2, arg3);
-       break;
-+    case sc_tortillas_bootup:
-+      break;
-+    case sc_tortillas_finished:
-+      break;
-     default:
-       kprintf("Syscall::syscall_exception: Unimplemented Syscall Number %zd\n", syscall_number);
-   }
+@@ -7,6 +7,7 @@
+ #include "ProcessRegistry.h"
+ #include "File.h"
+ #include "Scheduler.h"
++#include "SpinLock.h"
+ 
+ size_t Syscall::syscallException(size_t syscall_number, size_t arg1, size_t arg2, size_t arg3, size_t arg4, size_t arg5)
+ {
+@@ -67,6 +68,15 @@ void Syscall::pseudols(const char *pathname, char *buffer, size_t size)
+ 
+ void Syscall::exit(size_t exit_code)
+ {
++  if (exit_code == 1)
++  {
++    assert(false);
++  }
++  if (exit_code == 2)
++  {
++    SpinLock lock("");
++    lock.release();
++  }
+   debug(SYSCALL, "Syscall::EXIT: called, exit_code: %zd\n", exit_code);
+   currentThread->kill();
+   assert(false && "This should never happen");
 diff --git a/userspace/tests/shell.c b/userspace/tests/shell.c
-index c5c9f6b4..32d65eae 100644
+index a798ad27..88e27c0c 100644
 --- a/userspace/tests/shell.c
 +++ b/userspace/tests/shell.c
-@@ -214,6 +214,7 @@ int main(int argc, char *argv[])
-
-   __syscall(sc_pseudols, (size_t)"/usr/", (size_t)dir_content, sizeof(dir_content), 0, 0);
-
+@@ -348,9 +348,11 @@ int main(int argc, char* argv[]) {
+   printAvailableCommands();
+   __syscall(sc_pseudols, (size_t)SHELL_EXECUTABLE_PREFIX,
+             (size_t)dir_content, sizeof(dir_content), 0, 0);
 +  __syscall(sc_tortillas_bootup, 0, 0, 0, 0, 0);
-   do
-   {
-     printf("\n%s %s%s", "SWEB:", cwd, "> ");
-@@ -221,6 +222,7 @@ int main(int argc, char *argv[])
-     handle_command(buffer, BUFFER_SIZE);
-     for (size_t a = 0; a < BUFFER_SIZE; a++)
-       buffer[a] = 0;
+   while(running) {
+     readCommand();
+     handleCommand();
 +    __syscall(sc_tortillas_finished, 0, 0, 0, 0, 0);
-
-   } while (running);
-
+   }
+   return exit_code;
+ }

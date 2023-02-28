@@ -89,7 +89,7 @@ Add two syscalls to your sweb and note their syscall numbers. \
 One will signal bootup and the other one test completion. They don't need to do anything. You could name them `sc_tortillas_bootup` and `sc_tortillas_finished`.
 
 Call those syscalls in `userspace/tests/shell.c:main`. \
-The one for bootup should be called before the `do..while` loop and the one for test completion inside the loop, after `handle_command`.
+The one for bootup should be called just before `while(running)` and the one for test completion inside the loop, after `handleCommand`.
 
 See:
 - [`examples/base/sweb_patches/add_syscalls.diff`](examples/base/sweb_patches/add_syscalls.diff)
