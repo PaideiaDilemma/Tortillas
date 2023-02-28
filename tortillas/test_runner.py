@@ -105,21 +105,26 @@ class TestRunner:
         '''Start test execution.'''
         test_queue = list(self.test_runs[::-1])
         running_tests: dict[str, threading.Thread] = {}
+        lock = threading.Lock()
 
         self.progress_bar.create_counters(len(self.test_runs))
-        lock = threading.Lock()
         counters = self.progress_bar.Counter
 
         def thread_callback(test_run: TestRun):
-            '''Handle test completion and test retry.'''
+            '''
+            Removes `test_run` from `running_tests`,
+            updates the progress bar and handles retry.
+            '''
             with lock:
                 running_tests.pop(repr(test_run))
 
                 if test_run.result.retry:
                     test_logger = get_logger(repr(test_run), prefix=True)
-                    if test_run.result.panic:
-                        panic = ''.join(test_run.result.errors)
-                        test_logger.info(f'Restarting test, because of {panic}')
+                    test_logger.info('Retrying test')
+
+                    if test_run.result.errors:
+                        errors = '\n'.join(test_run.result.errors)
+                        test_logger.info(errors)
 
                     test_run.reset()
 

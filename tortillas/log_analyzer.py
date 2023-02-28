@@ -150,6 +150,10 @@ class LogAnalyzer:
             elif config_entry.mode == 'add_as_error_last':
                 result.add_errors(logs[0:1], status)
 
+            elif config_entry.mode == 'retry':
+                result.add_errors([f'Retry caused by {config_entry.name}'])
+                result.retry = True
+
             elif config_entry.mode == 'expect_stdout':
                 result.check_expect_stdout(logs, status)
 
