@@ -140,7 +140,7 @@ Make sure you use a __private repo__ though.
 
 Of course, this way, your pipeline will not be visible within gitlab.
 
-<sub><sup>You you have another way of running a CI/CD pipeline, add it here!</sup></sub>
+<sub><sup>If you have another way of running a CI/CD pipeline, add it here!</sup></sub>
 
 ## Cli Usage
 See `tortillas --help`
@@ -261,7 +261,10 @@ The pattern for the config entry for `exit_codes` has to be changed as well:
 - `pattern: str` - Regex pattern to match.
 - `mode: str` - Options:
     - `add_as_error` - Each match will be added to the error summary
-    - `add_as_error_join` - Matches will be joined and added to the error summary as a code block. `exit_codes` - _Special:_ entry needs to parse exit codes.
+    - `add_as_error_join` - Matches will be joined and added to the error summary as a code block.
+    - `add_as_error_last` - Add the last occurance of the pattern to the error_summary (Can be used to print the last pagefault)
+    - `retry` - Retry the test, if matched. (Only recommended for debugging shenanigans)
+    - `exit_codes` - _Special:_ entry needs to parse exit codes.
     - `expect_stdout` - _Special:_ specifically for `tortillas_expect`, entry needs to parse stdout (`Syscall::write: (.*)` in base-sweb).
 
 ###### Optional
