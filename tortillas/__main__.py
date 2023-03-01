@@ -58,7 +58,7 @@ def main():
                         action='store_true',
                         help='Turn of the progress bar')
 
-    parser.add_argument('-g', '--test-glob',
+    parser.add_argument('-g', '--glob',
                         help='Glob of tests in the testfolder\n'
                              'e.g. -g test_pthread* '
                               '(tests userspace/tests/test_pthread*.c)\n'
@@ -90,7 +90,7 @@ def main():
 
     config = TortillasConfig(tortillas_config_path)
 
-    all_specs = get_test_specs(sweb_src_folder, args.test_glob)
+    all_specs = get_test_specs(sweb_src_folder, args.glob)
     selected_specs = filter_test_specs(all_specs, args.category, args.tag)
     if len(selected_specs) == 0:
         log.error('No test specs were found')
