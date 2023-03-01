@@ -19,7 +19,7 @@ jobs:
       - name: Checkout Sweb
         uses: actions/checkout@v3
         with:
-          repository: IAIK/sweb
+          repository: PaideiaDilemma/tortillas-sweb
           path: sweb
 
       - name: Install dependencies
@@ -29,7 +29,6 @@ jobs:
 
       - name: Setup and compile sweb
         run: |
-          ./setup_sweb.sh $(pwd) $(pwd)/sweb base
           cmake -B"/tmp/sweb" -H"./sweb"
           cmake --build "/tmp/sweb" -j4
 
