@@ -9,11 +9,13 @@
 
 This program might be useful for students doing the [operating systems course](https://www.iaik.tugraz.at/course/operating-systems) at TU Graz.
 
-Tortillas is here to help with testing your sweb code.
-It aims to makes it easier for teams to do test driven development. Tortillas takes your test cases and runs them in individual Qemu instances, while logging the output and monitoring for errors.
+Tortillas is here to help with testing your sweb code. \
+It takes your test cases and runs them in individual Qemu instances, while logging the output and monitoring for errors.
 
-If you just want to try this out, go to [Quickstart](#quickstart). \
-If your team wants to use this, follow [Getting started](#getting-started).
+### Get started
+
+- [Quickstart](#quickstart)
+- [Manual setup](#manual-setup)
 
 ## Features
 
@@ -42,9 +44,10 @@ Note: After it ran, [grip](https://github.com/joeyespo/grip) was used to display
 
 ### CI/CD
 
-Check out the the latest run of the
-[demo workflow](https://github.com/PaideiaDilemma/Tortillas/actions/workflows/demo_ci.yml?query=branch%3Amain),
-as an example of how tortillas works.
+The [demo workflow](https://github.com/PaideiaDilemma/Tortillas/actions/workflows/demo_ci.yml?query=branch%3Amain) in this repository runs tortillas on the main,
+[extended](https://github.com/PaideiaDilemma/tortillas-sweb/tree/extended) and
+[panic](https://github.com/PaideiaDilemma/tortillas-sweb/tree/panic)
+branches from [tortillas-sweb](https://github.com/PaideiaDilemma/tortillas-sweb).
 
 ## Installation
 
@@ -57,44 +60,39 @@ pip install .          # No progress bar
 
 ## Quickstart
 
-If you want to use this as a team, or your sweb is already heavily modified,
-you should follow [Getting started](#getting-started) and do the changes to your sweb manually.
-
-You can use [`setup_sweb.sh`](setup_sweb.sh) to patch sweb with the necessary changes.
-
+You can clone [tortillas-sweb](https://github.com/PaideiaDilemma/tortillas-sweb),
+or add it as a remote and merge the main branch into you sweb.
 
 ```sh
-# Advised: checkout a new branch in your sweb repo
-# usage: setup_sweb.sh <tortillas_path> <sweb_path> <example>
-#
-cd <path_to_your_sweb_repo>
-<path_to_tortillas_repo>/setup_sweb.sh <path_to_tortillas_repo> . base
-tortillas
+# Currently at <path_to_your_sweb_repo>
+git checkout -b tortillas-quickstart
+git remote add tortillas-sweb https://github.com/PaideiaDilemma/tortillas-sweb
+git fetch tortillas-sweb
+git merge tortillas-sweb/main
+tortillas # Should run mult.c with SUCCESS
 ```
 
-## Getting started
-
-#### Why does tortillas require sweb to be changed?
-In short, because it makes detection of bootup and test completion
-easier and more reliable. For a better answer see [Interrupt/Syscall detection](#interruptsyscall-detection).
+## Manual setup
 
 ### Setup sweb
 
 #### 1. Grub boot menu
 You will need to set the grub boot timeout to 0, if you haven't already. \
-See [`examples/base/sweb_patches/no_grub_boot_menu.diff`](examples/base/sweb_patches/no_grub_boot_menu.diff)
+See [`no_grub_boot_menu.diff`](examples/base/sweb_patches/no_grub_boot_menu.diff)
 
 #### 2. Meta syscalls
+
 Add two syscalls to your sweb and note their syscall numbers. \
 One will signal bootup and the other one test completion. They don't need to do anything. You could name them `sc_tortillas_bootup` and `sc_tortillas_finished`.
 
 Call those syscalls in `userspace/tests/shell.c:main`. \
 The one for bootup should be called just before `while(running)` and the one for test completion inside the loop, after `handleCommand`.
 
-See:
-- [`examples/base/sweb_patches/add_syscalls.diff`](examples/base/sweb_patches/add_syscalls.diff)
-- [Interrupt/Syscall detection](#interruptsyscall-detection)
+See  [`add_syscalls.diff`](examples/base/sweb_patches/add_syscalls.diff)
 
+##### Why do I need to add syscalls to sweb?
+In short, because it makes detection of bootup and test completion
+easier and more reliable. For a better answer see [Interrupt/Syscall detection](#interruptsyscall-detection).
 
 #### 3. Add `tortillas_config.yml`
 Copy [`examples/base/tortillas_config.yml`](examples/base/tortillas_config.yml) from this repository to your sweb. Replace the numbers at `sc_tortillas_bootup` and `sc_tortillas_finished` with your syscall numbers.
@@ -134,8 +132,7 @@ This might be the best solution, but has the caviats of _you needing a server_ a
 
 #### 2. Set up a [repository mirror](https://docs.gitlab.com/ee/user/project/repository/mirror/)
 It is possible to mirror your gitlab sweb repo to github,
-where you can run a workflow with Github Actions, similar to the one in this
-repository ([`.github/workflows/demo_ci.yml`](.github/workflows/demo_ci.yml)).
+where you can run a workflow with Github Actions, similar to [the one from tortillas-sweb](https://github.com/PaideiaDilemma/tortillas-sweb/blob/main/.github/workflows/sweb-ci.yml).
 Make sure you use a __private repo__ though.
 
 Of course, this way, your pipeline will not be visible within gitlab.
@@ -358,7 +355,7 @@ A new IDEDriver is being worked on. Until then, you can try this [patch](./examp
 
 #### Multiple processes _(Known issue, pls fix)_
 
-Once your sweb involves `fork`, a obvious problem arises: __The shell needs to block until the last process finished__, otherwise
+Once your sweb involves `fork`, an obvious problem arises: __The shell needs to block until the last process finished__, otherwise
 tortillas will kill the test too early.
 
 When you switch your shell to `fork+exec` and you do not have `waitpid` to block, detection of test completion will break.

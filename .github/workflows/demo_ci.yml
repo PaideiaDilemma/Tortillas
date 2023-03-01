@@ -19,16 +19,12 @@ jobs:
       - name: Checkout Sweb
         uses: actions/checkout@v3
         with:
-          repository: IAIK/sweb
+          repository: PaideiaDilemma/tortillas-sweb
           path: sweb
 
       - name: Install dependencies
         run: |
           sudo apt install -y qemu-utils qemu-system-x86 python3-yaml
-
-      - name: Setup sweb
-        run:
-          ./setup_sweb.sh $(pwd) $(pwd)/sweb base
 
       - name: Run tortillas
         run: |
@@ -55,16 +51,13 @@ jobs:
       - name: Checkout Sweb
         uses: actions/checkout@v3
         with:
-          repository: IAIK/sweb
+          repository: PaideiaDilemma/tortillas-sweb
+          ref: extended
           path: sweb
 
       - name: Install dependencies
         run: |
           sudo apt install -y qemu-utils qemu-system-x86 python3-yaml
-
-      - name: Setup sweb
-        run: |
-          ./setup_sweb.sh $(pwd) $(pwd)/sweb extended
 
       - name: Run tortillas
         run: |
@@ -84,16 +77,13 @@ jobs:
       - name: Checkout Sweb
         uses: actions/checkout@v3
         with:
-          repository: IAIK/sweb
+          repository: PaideiaDilemma/tortillas-sweb
+          ref: panic
           path: sweb
 
       - name: Install dependencies
         run: |
           sudo apt install -y qemu-utils qemu-system-x86 python3-yaml
-
-      - name: Setup sweb
-        run: |
-          ./setup_sweb.sh $(pwd) $(pwd)/sweb panic
 
       - name: Run tortillas
         run: |
