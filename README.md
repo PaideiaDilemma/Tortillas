@@ -78,7 +78,7 @@ tortillas # Should run mult.c with SUCCESS
 
 #### 1. Grub boot menu
 You will need to set the grub boot timeout to 0, if you haven't already. \
-See [`no_grub_boot_menu.diff`](examples/base/sweb_patches/no_grub_boot_menu.diff)
+See [_examples_: No grub boot menu](examples/README.md#no-grub-boot-menu)
 
 #### 2. Meta syscalls
 
@@ -88,14 +88,15 @@ One will signal bootup and the other one test completion. They don't need to do 
 Call those syscalls in `userspace/tests/shell.c:main`. \
 The one for bootup should be called just before `while(running)` and the one for test completion inside the loop, after `handleCommand`.
 
-See  [`add_syscalls.diff`](examples/base/sweb_patches/add_syscalls.diff)
+See [_examples_: Meta syscalls](examples/README.md#meta-syscalls)
 
 ##### Why do I need to add syscalls to sweb?
 In short, because it makes detection of bootup and test completion
 easier and more reliable. For a better answer see [Interrupt/Syscall detection](#interruptsyscall-detection).
 
 #### 3. Add `tortillas_config.yml`
-Copy [`examples/base/tortillas_config.yml`](examples/base/tortillas_config.yml) from this repository to your sweb. Replace the numbers at `sc_tortillas_bootup` and `sc_tortillas_finished` with your syscall numbers.
+
+Copy [`examples/tortillas_config.yml`](examples/tortillas_config.yml) from this repository to your sweb. Replace the numbers at `sc_tortillas_bootup` and `sc_tortillas_finished` with your syscall numbers.
 
 See [Tortillas config](#tortillas-config)
 
@@ -128,7 +129,7 @@ If you want a CI/CD pipeline, you have the following possibilities:
 This requires a publicly accessible server. If you have your own runner, you can add it to your repository.
 
 You can use a workflow similar to [`examples/.gitlab-ci.yml`](examples/.gitlab-ci.yml)
-This might be the best solution, but has the caviats of _you needing a server_ and _not being able to upload artifacts_ (I think it is disabled on IAIK gitlab).
+This might be the best solution, but has the caveats of _you needing a server_ and _not being able to upload artifacts_ (I think it is disabled on IAIK gitlab).
 
 #### 2. Set up a [repository mirror](https://docs.gitlab.com/ee/user/project/repository/mirror/)
 It is possible to mirror your gitlab sweb repo to github,
@@ -227,7 +228,7 @@ The pattern for the config entry for `exit_codes` has to be changed as well:
         mode: add_as_error
 
     ```
-- [`examples/extended/`](/examples/extended) - The extended example introduces `tortillas_expect`, which is a sweb userspace function.
+- The [extended example](examples/README.md#extended-example) introduces `tortillas_expect`, which is a sweb userspace function.
   It basically just logs things with a prefix. It allows you to assert stuff to be printed via Syscall::write at runtime.
   This is something we used, but you probably wont need it.
 
@@ -259,7 +260,7 @@ The pattern for the config entry for `exit_codes` has to be changed as well:
 - `mode: str` - Options:
     - `add_as_error` - Each match will be added to the error summary
     - `add_as_error_join` - Matches will be joined and added to the error summary as a code block.
-    - `add_as_error_last` - Add the last occurance of the pattern to the error_summary (Can be used to print the last pagefault)
+    - `add_as_error_last` - Add the last occurrence of the pattern to the error_summary (Can be used to print the last pagefault)
     - `retry` - Retry the test, if matched. (Only recommended for debugging shenanigans)
     - `exit_codes` - _Special:_ entry needs to parse exit codes.
     - `expect_stdout` - _Special:_ specifically for `tortillas_expect`, entry needs to parse stdout (`Syscall::write: (.*)` in base-sweb).
@@ -348,10 +349,10 @@ Check your analyze entries in `tortillas_config.yml` and figure out what is not 
 See [Configure log handling _(You might need this)_](#configure-log-handling-you-might-need-this)
 
 #### Frequent sweb mounting errors
-The sweb IDEDriver currently sometimes fails to detect the idea drive. This produces the followign PANIC: \
+The sweb IDEDriver currently sometimes fails to detect the idea drive. This produces the following PANIC: \
 `KERNEL PANIC: Assertion !VfsSyscall::mount("idea1", "/usr", "minixfs", 0)`
 
-A new IDEDriver is being worked on. Until then, you can try this [patch](./examples/base/sweb_patches/_fix_mounting_error.diff).
+A new IDEDriver is being worked on. Until then, you can try something like [this](https://github.com/PaideiaDilemma/tortillas-sweb/commit/c0fb4e985b9a070c5cfa2596f500681844df1bf2).
 
 #### Multiple processes _(Known issue, pls fix)_
 
