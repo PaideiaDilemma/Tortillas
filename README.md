@@ -37,31 +37,35 @@ It takes your test cases and runs them in individual Qemu instances, while loggi
 
 ![](.assets/demo.gif)
 
-In this animation, Tortillas runs tests from the examples. \
+In this animation, Tortillas runs tests from the example. \
 Note: After it ran, [grip](https://github.com/joeyespo/grip) was used to display tortillas_summary.md
 
-</figure>
+### Example repo
+
+The example submodule in this repository points to [tortillas-sweb](https://github/PaideiaDilemma/tortillas-sweb). \
+Notable branches in this repo:
+
+- `main` contains a minimal example
+- `panic` demonstrates different test failures
 
 ### CI/CD
 
-The [demo workflow](https://github.com/PaideiaDilemma/Tortillas/actions/workflows/demo_ci.yml?query=branch%3Amain) in this repository runs tortillas on the main,
-[extended](https://github.com/PaideiaDilemma/tortillas-sweb/tree/extended) and
-[panic](https://github.com/PaideiaDilemma/tortillas-sweb/tree/panic)
-branches from [tortillas-sweb](https://github.com/PaideiaDilemma/tortillas-sweb).
+The [demo workflow](https://github.com/PaideiaDilemma/Tortillas/actions/workflows/demo_ci.yml?query=branch%3Amain) in this repository runs tortillas on the example repo.
+_(Github requires you to be logged in to see the workflow output)_.
 
 ## Installation
 
 ```
 git clone https://github.com/PaideiaDilemma/Tortillas
 cd Tortillas
-pip install .\[fancy\] # Include progress bar dependency (recommended)
-pip install .          # No progress bar
+python -m pip install .\[fancy\] # Include progress bar dependency (recommended)
+python -m pip install .          # No progress bar
 ```
 
 ## Quickstart
 
-You can clone [tortillas-sweb](https://github.com/PaideiaDilemma/tortillas-sweb),
-or add it as a remote and merge the main branch into you sweb.
+You can merge the main branch of the [example repo](https://github/PaideiaDilemma/tortillas-sweb) into your sweb.
+Make sure you understand the changes this introduces.
 
 ```sh
 # Currently at <path_to_your_sweb_repo>
@@ -77,8 +81,26 @@ tortillas # Should run mult.c with SUCCESS
 ### Setup sweb
 
 #### 1. Grub boot menu
-You will need to set the grub boot timeout to 0, if you haven't already. \
-See [_examples_: No grub boot menu](examples/README.md#no-grub-boot-menu)
+You will need to set the grub boot timeout to 0, if you haven't already.
+
+<details><summary>Example diff</summary>
+
+```diff
+diff --git a/utils/images/menu.lst b/utils/images/menu.lst
+index cf7fd93d..25e6f493 100644
+--- a/utils/images/menu.lst
++++ b/utils/images/menu.lst
+@@ -1,5 +1,7 @@
+
+ default 0
++timeout 0
++hiddenmenu
+
+ title = Sweb
+ root (hd0,0)
+```
+
+</details>
 
 #### 2. Meta syscalls
 
@@ -88,7 +110,53 @@ One will signal bootup and the other one test completion. They don't need to do 
 Call those syscalls in `userspace/tests/shell.c:main`. \
 The one for bootup should be called just before `while(running)` and the one for test completion inside the loop, after `handleCommand`.
 
-See [_examples_: Meta syscalls](examples/README.md#meta-syscalls)
+<details><summary>Example diff</summary>
+
+```diff
+diff --git a/common/include/kernel/syscall-definitions.h b/common/include/kernel/syscall-definitions.h
+index dd99d197..a3c6aadc 100644
+--- a/common/include/kernel/syscall-definitions.h
++++ b/common/include/kernel/syscall-definitions.h
+@@ -17,3 +17,5 @@
+ #define sc_createprocess 191
+ #define sc_trace 252
+
++#define sc_tortillas_bootup 1337
++#define sc_tortillas_finished 1338
+diff --git a/common/source/kernel/Syscall.cpp b/common/source/kernel/Syscall.cpp
+index 964cd5b4..e565a730 100644
+--- a/common/source/kernel/Syscall.cpp
++++ b/common/source/kernel/Syscall.cpp
+@@ -49,6 +49,10 @@ size_t Syscall::syscallException(size_t syscall_number, size_t arg1, size_t arg2
+     case sc_pseudols:
+       pseudols((const char*) arg1, (char*) arg2, arg3);
+       break;
++    case sc_tortillas_bootup:
++      break;
++    case sc_tortillas_finished:
++      break;
+     default:
+       return_value = -1;
+       kprintf("Syscall::syscallException: Unimplemented Syscall Number %zd\n", syscall_number);
+diff --git a/userspace/tests/shell.c b/userspace/tests/shell.c
+index a798ad27..88e27c0c 100644
+--- a/userspace/tests/shell.c
++++ b/userspace/tests/shell.c
+@@ -348,9 +348,11 @@ int main(int argc, char* argv[]) {
+   printAvailableCommands();
+   __syscall(sc_pseudols, (size_t)SHELL_EXECUTABLE_PREFIX,
+             (size_t)dir_content, sizeof(dir_content), 0, 0);
++  __syscall(sc_tortillas_bootup, 0, 0, 0, 0, 0);
+   while(running) {
+     readCommand();
+     handleCommand();
++    __syscall(sc_tortillas_finished, 0, 0, 0, 0, 0);
+   }
+   return exit_code;
+ }
+```
+
+</details>
 
 ##### Why do I need to add syscalls to sweb?
 In short, because it makes detection of bootup and test completion
@@ -96,7 +164,7 @@ easier and more reliable. For a better answer see [Interrupt/Syscall detection](
 
 #### 3. Add `tortillas_config.yml`
 
-Copy [`examples/tortillas_config.yml`](examples/tortillas_config.yml) from this repository to your sweb. Replace the numbers at `sc_tortillas_bootup` and `sc_tortillas_finished` with your syscall numbers.
+Copy [`tortillas_config.yml`](tortillas_config.yml) from this repository to your sweb. Replace the numbers at `sc_tortillas_bootup` and `sc_tortillas_finished` with your syscall numbers.
 
 See [Tortillas config](#tortillas-config)
 
@@ -128,7 +196,7 @@ If you want a CI/CD pipeline, you have the following possibilities:
 #### 1. Set up a [gitlab runner](https://docs.gitlab.com/runner/)
 This requires a publicly accessible server. If you have your own runner, you can add it to your repository.
 
-You can use a workflow similar to [`examples/.gitlab-ci.yml`](examples/.gitlab-ci.yml)
+You can use a workflow similar to [`gitlab-ci-example.yml`](gitlab-ci-example.yml)
 This might be the best solution, but has the caveats of _you needing a server_ and _not being able to upload artifacts_ (I think it is disabled on IAIK gitlab).
 
 #### 2. Set up a [repository mirror](https://docs.gitlab.com/ee/user/project/repository/mirror/)
@@ -149,14 +217,18 @@ python -m tortillas -S <path_to_your_sweb_repo>
 ```
 
 #### Examples
+
 ###### Running tortillas
+
 ```sh
 # If your are at <path_to_your_sweb_repo>
 tortillas
 # From any other directory:
 tortillas -S <path_to_your_sweb_repo>
 ```
+
 ###### Run a test selection
+
 Tortillas supports running tests selected by tag, category or glob pattern.
 ```
 tortillas --tag pthread         # Run all tests tagged with 'pthread'
@@ -165,12 +237,14 @@ tortillas --glob test*          # Run all tests, that match 'userspace/tests/tes
 ```
 
 ## Tortillas config
+
 The `tortillas-config.yml` file configures tortillas to fit your sweb.
 
 Per default it is expected to be at `<path_to_your_sweb_repo>/tortillas-config.yml`.\
 You can specify the config path with `tortillas -C <path_to_tortillas_config>`
 
 ### Configure log handling _(You might need this)_
+
 You can define how logs of your sweb are handled.
 
 Best understood by looking at an example.
@@ -228,10 +302,9 @@ The pattern for the config entry for `exit_codes` has to be changed as well:
         mode: add_as_error
 
     ```
-- The [extended example](examples/README.md#extended-example) introduces `tortillas_expect`, which is a sweb userspace function.
-  It basically just logs things with a prefix. It allows you to assert stuff to be printed via Syscall::write at runtime.
-  This is something we used, but you probably wont need it.
+- `tortillas_expect` is a sweb userspace function, which allows you to assert stuff to be printed via Syscall::write at runtime. You probably won't need that, but it is something we used.
 
+  For example:
   ```cpp
   #define NUM 100
   int main()
@@ -242,6 +315,39 @@ The pattern for the config entry for `exit_codes` has to be changed as well:
     printf("%d\n", NUM)
   }
   ```
+
+  <details><summary>Implementation and config entry</summary>
+
+    ### Introduce `tortillas_expect`
+
+    ```diff
+    diff --git a/userspace/libc/include/assert.h b/userspace/libc/include/assert.h
+    index 20e488f4..50e93c6b 100644
+    --- a/userspace/libc/include/assert.h
+    +++ b/userspace/libc/include/assert.h
+    @@ -7,3 +7,8 @@
+         printf("Assertion failed: '%s', file %s, function %s, line %d\n", #X, __FILE__, __FUNCTION__, __LINE__); \
+      exit(-1); } } while (0)
+
+    +/*
+    +* Wrapper around printf. Everything, that gets printed with this gets
+    +* prefixed with 'TORTILLAS EXPECT: '.
+    +**/
+    +#define tortillas_expect(FMT, ...) printf("TORTILLAS EXPECT: " FMT, __VA_ARGS__);
+    ```
+    ### Config entry
+
+    ```yaml
+    # Tortillas expect
+      - name: expect_stdout
+        scope: SYSCALL
+        pattern: 'Syscall::write: (.*)'
+        mode: expect_stdout
+        set_status: FAILED
+    ```
+
+  </details>
+
 
 ### Supported fields in `tortillas-config.yml`:
 
