@@ -15,12 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Checkout Sweb
-        uses: actions/checkout@v3
         with:
-          repository: PaideiaDilemma/tortillas-sweb
-          path: sweb
+          submodules: true
 
       - name: Install dependencies
         run: |
@@ -28,7 +24,7 @@ jobs:
 
       - name: Run tortillas
         run: |
-          python3 -m tortillas -S ./sweb
+          python3 -m tortillas -S ./example
 
         # Upload logs as test artifacts
         # - uses: actions/upload-artifact@v3
@@ -41,45 +37,15 @@ jobs:
         if: always()
         run: cat /tmp/sweb/tortillas_summary.md >> $GITHUB_STEP_SUMMARY
 
-  extended:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Checkout Sweb
-        uses: actions/checkout@v3
-        with:
-          repository: PaideiaDilemma/tortillas-sweb
-          ref: extended
-          path: sweb
-
-      - name: Install dependencies
-        run: |
-          sudo apt install -y qemu-utils qemu-system-x86 python3-yaml
-
-      - name: Run tortillas
-        run: |
-          python3 -m tortillas -S ./sweb
-
-      - name: Adding markdown
-        if: always()
-        run: cat /tmp/sweb/tortillas_summary.md >> $GITHUB_STEP_SUMMARY
-
   panic:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Checkout Sweb
-        uses: actions/checkout@v3
         with:
-          repository: PaideiaDilemma/tortillas-sweb
           ref: panic
-          path: sweb
+          submodules: true
 
       - name: Install dependencies
         run: |
@@ -87,7 +53,7 @@ jobs:
 
       - name: Run tortillas
         run: |
-          ! python3 -m tortillas -S ./sweb
+          ! python3 -m tortillas -S ./example
 
       - name: Adding markdown
         if: always()

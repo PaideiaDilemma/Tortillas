@@ -15,12 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Checkout Sweb
-        uses: actions/checkout@v3
         with:
-          repository: PaideiaDilemma/tortillas-sweb
-          path: sweb
+          submodules: true
 
       - name: Install dependencies
         run: |
@@ -29,8 +25,8 @@ jobs:
 
       - name: Setup and compile sweb
         run: |
-          cmake -B"/tmp/sweb" -H"./sweb"
-          cmake --build "/tmp/sweb" -j4
+          cmake -B"/tmp/sweb" -H"./example"
+          cmake --build "/tmp/sweb" -j$(nproc)
 
       - name: Run tests
         run: |
