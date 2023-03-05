@@ -1,3 +1,5 @@
 [submodule "example"]
 	path = example
+	branch = main
 	url = https://github.com/PaideiaDilemma/tortillas-sweb
+	update = rebase
