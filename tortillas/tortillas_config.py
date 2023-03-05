@@ -1,4 +1,4 @@
-'''This module handles tortillas configuration.'''
+"""This module handles tortillas configuration."""
 
 from __future__ import annotations
 
@@ -12,9 +12,9 @@ from .utils import get_logger
 
 @dataclasses.dataclass
 class AnalyzeConfigEntry:
-    '''
+    """
     Configuration of the log_parser.
-    '''
+    """
 
     name: str
     scope: str
@@ -23,20 +23,20 @@ class AnalyzeConfigEntry:
 
     set_status: str = dataclasses.field(default_factory=str)
 
-    pattern_compiled: re.Pattern | None = None
+    compiled_pattern: re.Pattern | None = None
 
     def __post_init__(self):
-        self.compile_pattern()
+        """Use `re.compile`, to compile the `self.pattern`."""
+        self.compiled_pattern = re.compile(self.pattern, re.DOTALL)
 
-    def compile_pattern(self) -> AnalyzeConfigEntry:
-        '''Use `re.compile`, to compile the `self.pattern`.'''
-        self.pattern_compiled = re.compile(self.pattern, re.DOTALL)
-        return self
+    def get_compiled_pattern(self) -> re.Pattern:
+        assert self.compiled_pattern
+        return self.compiled_pattern
 
 
 @dataclasses.dataclass(init=False, eq=False)
 class TortillasConfig:
-    '''
+    """
     Tortillas configuration class.
 
     The Constructor will automatically open and
@@ -44,7 +44,7 @@ class TortillasConfig:
 
     To add an option, add a member to this class.
     If it has a default value, you make it optional.
-    '''
+    """
 
     threads: int
 
@@ -57,8 +57,8 @@ class TortillasConfig:
     analyze: list[AnalyzeConfigEntry] = dataclasses.field(default_factory=list)
 
     def __init__(self, config_file_path: str):
-        self.logger = get_logger('Tortillas config', prefix=True)
-        with open(config_file_path, 'r') as yaml_config_file:
+        self.logger = get_logger("Tortillas config", prefix=True)
+        with open(config_file_path, "r") as yaml_config_file:
             config_raw = yaml_config_file.read()
 
             try:
@@ -73,13 +73,13 @@ class TortillasConfig:
                 if field.name not in config.keys():
                     if field.default is not dataclasses.MISSING:
                         continue
-                    self.logger.error(
-                        f'Expected option \"{field.name}\"')
+                    self.logger.error(f'Expected option "{field.name}"')
                     sys.exit(1)
 
-                elif field.name == 'analyze':
-                    self.analyze = [AnalyzeConfigEntry(**c)
-                                    for c in config.pop('analyze')]
+                elif field.name == "analyze":
+                    self.analyze = [
+                        AnalyzeConfigEntry(**c) for c in config.pop("analyze")
+                    ]
                 else:
-                    self.logger.debug(f'{field.name}: {config[field.name]}')
+                    self.logger.debug(f"{field.name}: {config[field.name]}")
                     setattr(self, field.name, config[field.name])

@@ -2,6 +2,6 @@ from tortillas.tortillas_config import TortillasConfig
 
 
 def test_parse_base_config():
-    config = TortillasConfig('./examples/tortillas_config.yml')
+    config = TortillasConfig("./examples/tortillas_config.yml")
 
     assert config
