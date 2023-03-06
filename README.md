@@ -42,7 +42,7 @@ Note: After it ran, [grip](https://github.com/joeyespo/grip) was used to display
 
 ### Example repo
 
-The example submodule in this repository points to [tortillas-sweb](https://github/PaideiaDilemma/tortillas-sweb). \
+The example submodule in this repository points to [tortillas-sweb](https://github.com/PaideiaDilemma/tortillas-sweb). \
 Notable branches in this repo:
 
 - `main` contains a minimal example
