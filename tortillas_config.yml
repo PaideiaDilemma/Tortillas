@@ -43,7 +43,7 @@ analyze:
 # Command not understood
   - name: command_not_understood
     scope: SYSCALL
-    pattern: 'Syscall::write: (Command not understood)'
+    pattern: 'Syscall::write: (Unknown command)'
     mode: add_as_error
     set_status: FAILED
 
