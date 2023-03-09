@@ -5,9 +5,9 @@ from typing import Any, Callable
 
 import sys
 import time
-import pathlib
 import threading
 import subprocess
+from pathlib import Path
 
 from .utils import get_logger
 from .constants import SWEB_BUILD_DIR, TEST_RUN_DIR, QEMU_VMSTATE_TAG, INT_SYSCALL
@@ -35,19 +35,17 @@ class TestRun:
         self.result = TestResult(TestStatus.NOT_RUN)
 
         tmp_dir_name = repr(self).lower().replace(" ", "-")
-        self.tmp_dir = rf"{TEST_RUN_DIR}/{tmp_dir_name}"
+        self.tmp_dir = TEST_RUN_DIR / tmp_dir_name
 
     def analyze(self, ir_watchdog_status: InterruptWatchdog.Status):
         """
         Call this to parse and analyze the logfile of this test run.
         """
         parser = LogParser(
-            log_file_path=f"{self.tmp_dir}/out.log", config=self.config.analyze
+            log_file_path=self.tmp_dir / "out.log", config=self.config.analyze
         )
 
-        analyzer = LogAnalyzer(
-            test_repr=repr(self), test_spec=self.spec, config=self.config.analyze
-        )
+        analyzer = LogAnalyzer(test_spec=self.spec, config=self.config.analyze)
 
         self.logger.info("Analyzing test result")
         self.result = analyzer.analyze(parser.parse(), ir_watchdog_status)
@@ -256,8 +254,7 @@ class TestRunner:
                         summary += f"- {error}"
                 summary += "\n"
 
-        with open(f"{SWEB_BUILD_DIR}/tortillas_summary.md", "w") as summary_file:
-            summary_file.write(summary)
+        (SWEB_BUILD_DIR / "tortillas_summary.md").write_text(summary)
 
         return summary
 
@@ -270,10 +267,10 @@ def _create_snapshot(architecture: str, label: str, config: TortillasConfig):
     if architecture == "x86_32":
         return_reg = "EAX"
 
-    tmp_dir = f"{TEST_RUN_DIR}/snapshot"
+    tmp_dir = TEST_RUN_DIR / "snapshot"
     _clean_tmp_dir(tmp_dir)
 
-    snapshot_qcow2_path = f"{tmp_dir}/SWEB.qcow2"
+    snapshot_qcow2_path = tmp_dir / "SWEB.qcow2"
 
     subprocess.run(
         [
@@ -284,8 +281,8 @@ def _create_snapshot(architecture: str, label: str, config: TortillasConfig):
             "-F",
             "qcow2",
             "-b",
-            f"{SWEB_BUILD_DIR}/SWEB.qcow2",
-            snapshot_qcow2_path,
+            str(SWEB_BUILD_DIR / "SWEB.qcow2"),
+            str(snapshot_qcow2_path),
         ],
         check=True,
         stdout=subprocess.DEVNULL,
@@ -320,8 +317,7 @@ def _create_snapshot(architecture: str, label: str, config: TortillasConfig):
             qemu.monitor_command(f"savevm {label}\n")
 
     if bootup_error:
-        with open(f"{tmp_dir}/out.log", "r") as log_file:
-            log.info(log_file.read())
+        log.info((tmp_dir / "out.log").read_text())
         sys.exit(1)
 
     subprocess.run(
@@ -346,9 +342,9 @@ def _run(
 
     log.debug(f"Copying SWEB-snapshot.qcow2 to {tmp_dir}")
 
-    snapshot_path = f"{tmp_dir}/SWEB-snapshot.qcow2"
+    snapshot_path = tmp_dir / "SWEB-snapshot.qcow2"
     subprocess.run(
-        ["cp", f"{TEST_RUN_DIR}/SWEB-snapshot.qcow2", snapshot_path], check=True
+        ["cp", str(TEST_RUN_DIR / "SWEB-snapshot.qcow2"), snapshot_path], check=True
     )
 
     log.debug(f"Starting qemu snapshot {QEMU_VMSTATE_TAG} (arch={architecture})")
@@ -393,8 +389,8 @@ def _run(
         callback(test)
 
 
-def _clean_tmp_dir(tmp_dir: str):
-    if pathlib.Path(tmp_dir).is_dir():
+def _clean_tmp_dir(tmp_dir: Path):
+    if tmp_dir.is_dir():
         subprocess.run(f"rm {tmp_dir}/*", shell=True)
     else:
-        subprocess.run(["mkdir", tmp_dir], check=True)
+        subprocess.run(["mkdir", str(tmp_dir)], check=True)

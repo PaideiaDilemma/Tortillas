@@ -6,6 +6,7 @@ qemu process.
 from __future__ import annotations
 from types import TracebackType
 from typing import TextIO, Type
+from pathlib import Path
 
 import os
 import time
@@ -25,8 +26,8 @@ class QemuInterface:
 
     def __init__(
         self,
-        tmp_dir: str,
-        qcow2_path: str,
+        tmp_dir: Path,
+        qcow2_path: Path,
         *,
         arch: str = "x86_64",
         logger: Logger | None = None,
@@ -36,7 +37,7 @@ class QemuInterface:
         self.logger = logger if logger else get_logger(f"QemuInterface {tmp_dir}")
 
         self.qcow2_path = qcow2_path
-        self.tmp_dir = tmp_dir
+        self.tmp_dir: Path = tmp_dir
 
         self.arch = arch
         self.vmstate = vmstate
@@ -47,14 +48,14 @@ class QemuInterface:
         self.input: TextIO
 
     @property
-    def fifos(self):
+    def fifos(self) -> Path:
         """Fifo path exluding `.in` and `.out`."""
-        return f"{self.tmp_dir}/qemu"
+        return self.tmp_dir / "qemu"
 
     @property
-    def log_file(self):
+    def log_file(self) -> Path:
         """Log file path."""
-        return f"{self.tmp_dir}/out.log"
+        return self.tmp_dir / "out.log"
 
     def __enter__(self):
         self.logger.debug("Creating pipes for qemu IO")
@@ -64,13 +65,13 @@ class QemuInterface:
         # subprocess.run(['mkfifo', '-m', 'a=rw', f'{self.fifos}.out'],
         #               check=True)
 
-        os.mkfifo(f"{self.fifos}.in")
-        os.mkfifo(f"{self.fifos}.out")
+        os.mkfifo(self.fifos.with_suffix(".in"))
+        os.mkfifo(self.fifos.with_suffix(".out"))
 
         self.logger.debug(f"Starting qemu (arch={self.arch})")
 
         self.process = self._popen_qemu()
-        self.input = open(f"{self.fifos}.in", "w", encoding="utf-8")  # noqa: SIM115
+        self.input = self.fifos.with_suffix(".in").open("w")  # noqa: SIM115
 
         if self.interrupts:
             self.interrupt_watchdog = InterruptWatchdog(self.tmp_dir, self)
@@ -202,8 +203,8 @@ class InterruptWatchdog:
         TIMEOUT = 2
         STOPPED = 3
 
-    def __init__(self, tmp_dir: str, qemu_interface: QemuInterface):
-        self.interrupt_logfile = f"{tmp_dir}/int.log"
+    def __init__(self, tmp_dir: Path, qemu_interface: QemuInterface):
+        self.interrupt_logfile = tmp_dir / "int.log"
         self.logger = qemu_interface.logger
 
         self.qemu_interface = qemu_interface
@@ -219,7 +220,7 @@ class InterruptWatchdog:
 
     def clean(self):
         """Clear/Touch the interrupt logfile."""
-        with open(self.interrupt_logfile, "w"):
+        with self.interrupt_logfile.open("w"):
             pass  # touch int.log
 
     def stop(self):
@@ -242,7 +243,7 @@ class InterruptWatchdog:
             previous_position = self.file_pos
             time.sleep(self.sleep_time)
 
-            with open(self.interrupt_logfile, "r") as logfile:
+            with self.interrupt_logfile.open("r") as logfile:
                 logfile.seek(self.file_pos)
                 lines = logfile.readlines()
                 interrupt = self.search_interrupt(int_num, int_regs, lines)

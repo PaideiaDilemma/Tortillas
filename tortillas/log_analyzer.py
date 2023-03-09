@@ -6,7 +6,6 @@ from enum import Enum
 import dataclasses
 
 from .constants import TORTILLAS_EXPECT_PREFIX
-from .utils import get_logger
 from .tortillas_config import AnalyzeConfigEntry
 from .test_specification import TestSpec
 from .qemu_interface import InterruptWatchdog
@@ -111,11 +110,7 @@ class LogAnalyzer:
     This class is used to analyze log_data parsed by the LogParser.
     """
 
-    def __init__(
-        self, test_repr: str, test_spec: TestSpec, config: list[AnalyzeConfigEntry]
-    ):
-        self.logger = get_logger(f"{test_repr} analyzer", prefix=True)
-
+    def __init__(self, test_spec: TestSpec, config: list[AnalyzeConfigEntry]):
         self.test_spec = test_spec
         self.config = config
 
@@ -131,9 +126,7 @@ class LogAnalyzer:
             return result
 
         if ir_watchdog_status == InterruptWatchdog.Status.STOPPED:
-            result.add_errors(
-                ["Test killed, because no more " "interrupts were coming"]
-            )
+            result.add_errors(["Test killed, because no more interrupts were coming"])
 
         if (
             ir_watchdog_status == InterruptWatchdog.Status.TIMEOUT

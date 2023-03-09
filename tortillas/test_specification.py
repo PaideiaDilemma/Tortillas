@@ -3,22 +3,20 @@
 from __future__ import annotations
 
 import sys
-import pathlib
 import dataclasses
 import yaml
+from pathlib import Path
 
 from .utils import get_logger
 from .constants import TEST_FOLDER_PATH
 
 
-def get_test_specs(sweb_src_folder: str, test_glob: str) -> list[TestSpec]:
+def get_test_specs(sweb_src_folder: Path, test_glob: str) -> list[TestSpec]:
     """
     Gets all TestSpecs (yaml test headers) that can be found at
     `sweb_src_folder/TEST_FOLDER_PATH/{test_glob}.c`
     """
-    file_paths = list(
-        pathlib.Path(f"{sweb_src_folder}/{TEST_FOLDER_PATH}").glob(f"{test_glob}.c")
-    )
+    file_paths = list((sweb_src_folder / TEST_FOLDER_PATH).glob(f"{test_glob}.c"))
 
     specs = []
     for file_path in file_paths:
@@ -83,7 +81,7 @@ class TestSpec:
 
     tags: list[str] | None = None
 
-    def __init__(self, test_name: str, test_src_path: str):
+    def __init__(self, test_name: str, test_src_path: Path):
         """:raises: NoTestSpecFound: `yaml.safe_loads` failed"""
         self.test_name = test_name
         self.test_src_path = test_src_path
@@ -108,10 +106,10 @@ class TestSpec:
                 setattr(self, field.name, config[field.name])
 
     @staticmethod
-    def _parse_yaml_config_header(test_src_path: str) -> dict:
+    def _parse_yaml_config_header(test_src_path: Path) -> dict:
         """:raises: NoTestSpecFound: no valid yaml header was found"""
         test_config_raw = ""
-        with open(test_src_path, "r") as test_src_file:
+        with test_src_path.open("r") as test_src_file:
             lines = test_src_file.readlines()
             if not lines[0].startswith("/*") or (
                 "---" not in lines[0] and "---" not in lines[1]

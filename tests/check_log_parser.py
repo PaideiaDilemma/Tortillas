@@ -1,5 +1,8 @@
+from pathlib import Path
 from tortillas.log_parser import LogParser
 from tortillas.tortillas_config import AnalyzeConfigEntry
+
+LOG_FILE_PATH = Path("./tests/assets/out_log.txt")
 
 
 def test_log_splitting():
@@ -7,9 +10,7 @@ def test_log_splitting():
         name="test", scope="SYSCALL", pattern=r"(.*)", mode=""
     )
 
-    log_parser = LogParser(
-        log_file_path="./tests/assets/out_log.txt", config=[config_entry]
-    )
+    log_parser = LogParser(log_file_path=LOG_FILE_PATH, config=[config_entry])
 
     log_data = log_parser.parse()
 
@@ -24,9 +25,7 @@ def test_parsing_int_splitting():
         name="test", scope="SYSCALL", pattern=r"exit_code: (\d+)", mode=""
     )
 
-    log_parser = LogParser(
-        log_file_path="./tests/assets/out_log.txt", config=[config_entry]
-    )
+    log_parser = LogParser(log_file_path=LOG_FILE_PATH, config=[config_entry])
 
     log_data = log_parser.parse()
 
@@ -43,7 +42,7 @@ def test_multiple_config_entries():
         ),
     ]
 
-    log_parser = LogParser(log_file_path="./tests/assets/out_log.txt", config=config)
+    log_parser = LogParser(log_file_path=LOG_FILE_PATH, config=config)
 
     log_data = log_parser.parse()
 

@@ -1,20 +1,22 @@
+from pathlib import Path
 from tortillas.log_parser import LogParser
 from tortillas.test_specification import TestSpec
 from tortillas.tortillas_config import AnalyzeConfigEntry
 from tortillas.log_analyzer import LogAnalyzer, TestStatus
 from tortillas.qemu_interface import InterruptWatchdog
 
+LOG_FILE_PATH = Path("./tests/assets/out_log.txt")
+TEST_SPEC_PATH = Path("./tests/assets/test_spec.txt")
+
 
 def _get_log_data(config_entry: AnalyzeConfigEntry):
-    log_parser = LogParser(
-        log_file_path="./tests/assets/out_log.txt", config=[config_entry]
-    )
+    log_parser = LogParser(log_file_path=LOG_FILE_PATH, config=[config_entry])
 
     return log_parser.parse()
 
 
 def _get_test_spec():
-    return TestSpec("pytest", "./tests/assets/test_spec.txt")
+    return TestSpec("pytest", TEST_SPEC_PATH)
 
 
 def test_analyze_add_as_error():
@@ -28,9 +30,7 @@ def test_analyze_add_as_error():
 
     log_data = _get_log_data(config_entry)
 
-    analyzer = LogAnalyzer(
-        test_repr="pytest", test_spec=_get_test_spec(), config=[config_entry]
-    )
+    analyzer = LogAnalyzer(test_spec=_get_test_spec(), config=[config_entry])
 
     result = analyzer.analyze(log_data, InterruptWatchdog.Status.OK)
 
@@ -45,9 +45,7 @@ def test_analyze_exit_codes():
         name="test", scope="", pattern="", mode="exit_codes", set_status="FAILED"
     )
 
-    analyzer = LogAnalyzer(
-        test_repr="pytest", test_spec=_get_test_spec(), config=[config_entry]
-    )
+    analyzer = LogAnalyzer(test_spec=_get_test_spec(), config=[config_entry])
 
     result = analyzer.analyze(log_data, InterruptWatchdog.Status.OK)
 
@@ -66,9 +64,7 @@ def test_expect_stdout():
         name="test", scope="", pattern="", mode="expect_stdout", set_status="FAILED"
     )
 
-    analyzer = LogAnalyzer(
-        test_repr="pytest", test_spec=_get_test_spec(), config=[config_entry]
-    )
+    analyzer = LogAnalyzer(test_spec=_get_test_spec(), config=[config_entry])
 
     result = analyzer.analyze(log_data, InterruptWatchdog.Status.OK)
 

@@ -1,21 +1,24 @@
-import os
 import subprocess
+from pathlib import Path
 from tortillas.qemu_interface import QemuInterface, InterruptWatchdog
+
+IMAGE_PATH = Path("/tmp/sweb/SWEB.qcow2")
+TEST_RUN_DIR = Path("/tmp/sweb/test")
 
 
 def _setup():
-    assert os.path.exists("/tmp/sweb/SWEB.qcow2")  # Compile sweb??
-    if not os.path.exists("/tmp/sweb/test"):
-        os.mkdir("/tmp/sweb/test")
+    assert IMAGE_PATH.exists()
+    if not TEST_RUN_DIR.is_dir():
+        TEST_RUN_DIR.mkdir()
     else:
-        subprocess.run("rm /tmp/sweb/test/*", shell=True)
+        subprocess.run(f"rm {TEST_RUN_DIR}/*", shell=True)
 
 
 def test_waiting_for_bootup():
     _setup()
 
     with QemuInterface(
-        tmp_dir="/tmp/sweb/test", qcow2_path="/tmp/sweb/SWEB.qcow2"
+        tmp_dir=Path("/tmp/sweb/test"), qcow2_path=Path("/tmp/sweb/SWEB.qcow2")
     ) as qemu:
         res = qemu.interrupt_watchdog.wait_until(
             int_num=80, int_regs={"RAX": 1337}, timeout=10
@@ -31,7 +34,7 @@ def test_timeout():
     _setup()
 
     with QemuInterface(
-        tmp_dir="/tmp/sweb/test", qcow2_path="/tmp/sweb/SWEB.qcow2"
+        tmp_dir=Path("/tmp/sweb/test"), qcow2_path=Path("/tmp/sweb/SWEB.qcow2")
     ) as qemu:
         res = qemu.interrupt_watchdog.wait_until(
             int_num=80, int_regs={"RAX": 11111}, timeout=10
@@ -44,7 +47,7 @@ def test_run_mult():
     _setup()
 
     with QemuInterface(
-        tmp_dir="/tmp/sweb/test", qcow2_path="/tmp/sweb/SWEB.qcow2"
+        tmp_dir=Path("/tmp/sweb/test"), qcow2_path=Path("/tmp/sweb/SWEB.qcow2")
     ) as qemu:
         res = qemu.interrupt_watchdog.wait_until(
             int_num=80, int_regs={"RAX": 1337}, timeout=10

@@ -1,11 +1,14 @@
 """This module handles tortillas configuration."""
 
 from __future__ import annotations
+from pathlib import Path
 
 import re
 import sys
 import dataclasses
 import yaml
+from logging import Logger
+from typing import Any
 
 from .utils import get_logger
 
@@ -13,7 +16,8 @@ from .utils import get_logger
 @dataclasses.dataclass
 class AnalyzeConfigEntry:
     """
-    Configuration of the log_parser.
+    Configuration entry, that specifies how a certain type of log message
+    should get parsed and interpreted.
     """
 
     name: str
@@ -56,30 +60,35 @@ class TortillasConfig:
 
     analyze: list[AnalyzeConfigEntry] = dataclasses.field(default_factory=list)
 
-    def __init__(self, config_file_path: str):
-        self.logger = get_logger("Tortillas config", prefix=True)
-        with open(config_file_path, "r") as yaml_config_file:
-            config_raw = yaml_config_file.read()
+    def __init__(self, config_file_path: Path):
+        logger = get_logger("Tortillas config", prefix=True)
 
-            try:
-                config = yaml.safe_load(config_raw)
-            except yaml.YAMLError as exc:
-                self.logger.error(exc)
+        config = _load_tortillas_config(config_file_path, logger)
+
+        # This is manually setting all the attributes, to be able to
+        # handle optional fields and construct ConfigEntry objects
+        for field in dataclasses.fields(self):
+            if field.name not in config.keys():
+                if field.default is not dataclasses.MISSING:
+                    continue
+                logger.error(f'Expected option "{field.name}"')
                 sys.exit(1)
 
-            # This is manually setting all the attributes, to be able to
-            # handle optional fields and construct ConfigEntry objects
-            for field in dataclasses.fields(self):
-                if field.name not in config.keys():
-                    if field.default is not dataclasses.MISSING:
-                        continue
-                    self.logger.error(f'Expected option "{field.name}"')
-                    sys.exit(1)
+            elif field.name == "analyze":
+                self.analyze = [AnalyzeConfigEntry(**c) for c in config.pop("analyze")]
+            else:
+                logger.debug(f"{field.name}: {config[field.name]}")
+                setattr(self, field.name, config[field.name])
 
-                elif field.name == "analyze":
-                    self.analyze = [
-                        AnalyzeConfigEntry(**c) for c in config.pop("analyze")
-                    ]
-                else:
-                    self.logger.debug(f"{field.name}: {config[field.name]}")
-                    setattr(self, field.name, config[field.name])
+
+def _load_tortillas_config(config_file_path: Path, logger: Logger) -> Any:
+    with config_file_path.open("r") as yaml_config_file:
+        config_raw = yaml_config_file.read()
+
+        try:
+            config = yaml.safe_load(config_raw)
+        except yaml.YAMLError as exc:
+            logger.error(exc)
+            sys.exit(1)
+
+    return config

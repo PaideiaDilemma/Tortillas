@@ -1,9 +1,10 @@
 """Parse arguments, make a qemu snapshot of SWEB and run applicable tests."""
 
 from __future__ import annotations
+from pathlib import Path
+
 import argparse
 import logging
-import os
 import sys
 
 from .utils import get_logger
@@ -14,7 +15,9 @@ from .tortillas_config import TortillasConfig
 from .progress_bar import ProgressBar
 
 
-def _build_sweb(src_directory: str, setup: bool, architecture: str):
+def _build_sweb(src_directory: Path, setup: bool, architecture: str):
+    import os
+
     if setup:
         # This command is equivalent to setup_cmake.sh
         cmd = f'cmake -B"{SWEB_BUILD_DIR}" -H"{src_directory}"'
@@ -37,17 +40,17 @@ def main():
     parser.add_argument(
         "-S",
         "--sweb-path",
-        type=str,
+        type=Path,
         help="Path to a sweb src directory",
-        default=os.getcwd(),
+        default=Path.cwd(),
     )
 
     parser.add_argument(
         "-C",
         "--config-path",
-        type=str,
+        type=Path,
         help="Path to a tortillas config file",
-        default="",
+        default=None,
     )
 
     parser.add_argument(
@@ -104,14 +107,12 @@ def main():
 
     sweb_src_folder = args.sweb_path
     if not args.config_path:
-        args.config_path = f"{sweb_src_folder}/tortillas_config.yml"
-
-    tortillas_config_path = args.config_path.replace("{sweb_path}", sweb_src_folder)
+        args.config_path = sweb_src_folder / "tortillas_config.yml"
 
     progress_bar = ProgressBar(args.no_progress)
     log.info("Starting tortillas© test system\n")
 
-    config = TortillasConfig(tortillas_config_path)
+    config = TortillasConfig(args.config_path)
 
     all_specs = get_test_specs(sweb_src_folder, args.glob)
     selected_specs = filter_test_specs(all_specs, args.category, args.tag)
@@ -127,8 +128,8 @@ def main():
     if not args.skip_build:
         _build_sweb(sweb_src_folder, not args.skip_setup, args.arch)
 
-    if not os.path.exists(TEST_RUN_DIR):
-        os.mkdir(TEST_RUN_DIR)
+    if not TEST_RUN_DIR.is_dir():
+        TEST_RUN_DIR.mkdir()
 
     progress_bar.update_main_status("Creating snapshot")
     test_runner.create_snapshot()

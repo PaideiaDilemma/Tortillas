@@ -1,6 +1,7 @@
 """This module is used to parse SWEB logs."""
 
 from __future__ import annotations
+from pathlib import Path
 
 import re
 
@@ -11,36 +12,35 @@ from .tortillas_config import AnalyzeConfigEntry
 class LogParser:
     """Configurable parser for the log output of SWEB."""
 
-    def __init__(self, log_file_path: str, config: list[AnalyzeConfigEntry]):
+    SPLIT_PATTERN = re.compile(
+        r"""
+        # Debug: https://regex101.com/r/UiFMcy/3
+        (                       # Match the 'scope' of the log message
+            \[[A-Z_]+\s*\]          # Log identifier. e.g [SYSCALL  ]
+        |                           # or
+            KERNEL\sPANIC:\s        # KERNEL PANIC:
+        )
+        (.+?                    # Lazy match everything until
+            (?=
+                \[[A-Z_]+\s*\]      # Next log identifier
+            |                       # or
+                KERNEL\sPANIC       # KERNEL PANIC
+            |                       # or
+                \Z                  # EOF
+            )
+        )
+        """,
+        re.DOTALL | re.VERBOSE,
+    )
+
+    def __init__(self, log_file_path: Path, config: list[AnalyzeConfigEntry]):
         """
         Set up the parser. The parser will parse the file at `log_file_path`
         with the rules specified by `config`.
         """
 
         self.log_file_path = log_file_path
-
-        self.config: list[AnalyzeConfigEntry] = config
-
-        self.split_by_pattern = re.compile(
-            r"""
-            # Debug: https://regex101.com/r/UiFMcy/3
-            (                       # Match the 'scope' of the log message
-                \[[A-Z_]+\s*\]          # Log identifier. e.g [SYSCALL  ]
-            |                           # or
-                KERNEL\sPANIC:\s        # KERNEL PANIC:
-            )
-            (.+?                    # Lazy match everything until
-                (?=
-                    \[[A-Z_]+\s*\]      # Next log identifier
-                |                       # or
-                    KERNEL\sPANIC       # KERNEL PANIC
-                |                       # or
-                    \Z                  # EOF
-                )
-            )
-        """,
-            re.DOTALL | re.VERBOSE,
-        )
+        self.config = config
 
     def parse(self) -> dict[str, list[str]]:
         """
@@ -50,9 +50,9 @@ class LogParser:
         """
         log_data: dict[str, list[str]] = {entry.name: [] for entry in self.config}
 
-        with open(self.log_file_path, "rb") as logfile:
+        with self.log_file_path.open("rb") as logfile:
             escaped_logs = escape_ansi(logfile.read()).decode()
-            for match in self.split_by_pattern.finditer(escaped_logs):
+            for match in self.SPLIT_PATTERN.finditer(escaped_logs):
                 debug_log_type = match.group(1).strip("[]: ")
 
                 message = match.group(2)
