@@ -1,0 +1,20 @@
+image: alpine:3.16
+
+before_script:
+    - apk update
+    - apk add git cmake qemu qemu-img qemu-system-x86_64 qemu-system-i386 gcc g++ make libc-dev python3 py3-yaml
+
+build:
+  stage: build
+  script:
+    - echo "Building newest commit in $CI_COMMIT_BRANCH!"
+    - sh setup_cmake.sh
+    - cd /tmp/sweb
+    - make -j$(nproc)
+
+tortillas:
+  stage: test
+  script:
+    - git clone https://github.com/PaideiaDilemma/Tortillas.git ./tortillas
+    - cd tortillas
+    - python3 -m tortillas -S ..
