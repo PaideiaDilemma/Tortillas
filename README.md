@@ -454,12 +454,6 @@ You probably changed a `debug()` call somewhere, or disabled a scope tortillas n
 Check your analyze entries in `tortillas_config.yml` and figure out what is not being detected.
 See [Configure log handling _(You might need this)_](#configure-log-handling-you-might-need-this)
 
-#### Frequent sweb mounting errors
-The sweb IDEDriver currently sometimes fails to detect the idea drive. This produces the following PANIC: \
-`KERNEL PANIC: Assertion !VfsSyscall::mount("idea1", "/usr", "minixfs", 0)`
-
-A new IDEDriver is being worked on. Until then, you can try something like [this](https://github.com/PaideiaDilemma/tortillas-sweb/commit/c0fb4e985b9a070c5cfa2596f500681844df1bf2).
-
 #### Multiple processes _(Known issue, pls fix)_
 
 Once your sweb involves `fork`, an obvious problem arises: __The shell needs to block until the last process finished__, otherwise
