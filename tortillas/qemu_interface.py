@@ -57,6 +57,11 @@ class QemuInterface:
         """Log file path."""
         return self.tmp_dir / "out.log"
 
+    @property
+    def int_log_file(self) -> Path:
+        """Interrupt log file path."""
+        return self.tmp_dir / "int.log"
+
     def __enter__(self):
         self.logger.debug("Creating pipes for qemu IO")
 
@@ -74,7 +79,7 @@ class QemuInterface:
         self.input = self.fifos.with_suffix(".in").open("w")  # noqa: SIM115
 
         if self.interrupts:
-            self.interrupt_watchdog = InterruptWatchdog(self.tmp_dir, self)
+            self.interrupt_watchdog = InterruptWatchdog(self)
             self.interrupt_watchdog.start()
 
         return self
@@ -111,6 +116,7 @@ class QemuInterface:
                 f"-drive file={self.qcow2_path},index=0,media=disk "
                 f"-debugcon file:{self.log_file} "
                 f"-monitor pipe:{self.fifos} "
+                f"-D {self.int_log_file} "
                 "-nographic -display none -serial /dev/null"
             )
 
@@ -120,6 +126,7 @@ class QemuInterface:
                 f"-drive file={self.qcow2_path},index=0,media=disk "
                 f"-debugcon file:{self.log_file} "
                 f"-monitor pipe:{self.fifos} "
+                f"-D {self.int_log_file} "
                 "-nographic -display none -serial /dev/null"
             )
 
@@ -203,9 +210,9 @@ class InterruptWatchdog:
         TIMEOUT = 2
         STOPPED = 3
 
-    def __init__(self, tmp_dir: Path, qemu_interface: QemuInterface):
-        self.interrupt_logfile = tmp_dir / "int.log"
+    def __init__(self, qemu_interface: QemuInterface):
         self.logger = qemu_interface.logger
+        self.interrupt_logfile = qemu_interface.int_log_file
 
         self.qemu_interface = qemu_interface
 
@@ -215,7 +222,6 @@ class InterruptWatchdog:
     def start(self):
         """Start logging interrupts."""
         self.clean()
-        self.qemu_interface.monitor_command(f"logfile {self.interrupt_logfile}\n")
         self.qemu_interface.monitor_command("log int\n")
 
     def clean(self):
