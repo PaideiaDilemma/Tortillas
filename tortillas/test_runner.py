@@ -186,7 +186,7 @@ class TestRunner:
         # Testing finished
 
         self.success = not any(
-            test_run.result.status in (TestStatus.FAILED, TestStatus.PANIC)
+            test_run.result.status in (TestStatus.FAILED, TestStatus.PANIC, TestStatus.TIMEOUT)
             for test_run in self.test_runs
         )
 
