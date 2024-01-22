@@ -186,7 +186,7 @@ class TestRunner:
         # Testing finished
 
         self.success = not any(
-            test_run.result.status in (TestStatus.FAILED, TestStatus.PANIC)
+            test_run.result.status in (TestStatus.FAILED, TestStatus.PANIC, TestStatus.TIMEOUT)
             for test_run in self.test_runs
         )
 
@@ -381,8 +381,12 @@ def _run(
 
         # Wait a bit for cleanup and debug output to be flushed
         time.sleep(1)
+        # analyze before exiting the shell, to keep exit codes intact
+        test.analyze(status)
 
-    test.analyze(status)
+        # exit the shell, so files are written to the qcow2 image
+        qemu.sweb_input("exit\n")
+        time.sleep(1)
 
     log.info("Done!")
     if callback:

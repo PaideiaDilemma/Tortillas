@@ -142,8 +142,11 @@ class LogAnalyzer:
                 else TestStatus[config_entry.set_status]
             )
 
-            if not logs:
-                continue
+            # fixme: this is flawed, why is this here?
+            #  when tortillas gets no logs and and aborts, it can't detect incorrect or missing exit codes
+            #  as a result, every test with incorrect exit codes passes
+            # if not logs:
+            #     continue
 
             if config_entry.mode == "add_as_error":
                 result.add_errors(logs, status)
