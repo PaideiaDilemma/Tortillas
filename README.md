@@ -12,11 +12,6 @@ This program might be useful for students doing the [operating systems course](h
 Tortillas is here to help with testing your sweb code. \
 It takes your test cases and runs them in individual Qemu instances, while logging the output and monitoring for errors.
 
-### Get started
-
-- [Quickstart](#quickstart)
-- [Manual setup](#manual-setup)
-
 ## Features
 
 - Parallel test execution
@@ -48,7 +43,7 @@ Notable branches in this repo:
 - `main` contains a minimal example
 - `panic` demonstrates different test failures
 
-### CI/CD
+### CI
 
 The [demo workflow](https://github.com/PaideiaDilemma/Tortillas/actions/workflows/demo_ci.yml?query=branch%3Amain) in this repository runs tortillas on the example repo.
 _(Github requires you to be logged in to see the workflow output)_.
@@ -58,22 +53,10 @@ _(Github requires you to be logged in to see the workflow output)_.
 ```
 git clone https://github.com/PaideiaDilemma/Tortillas
 cd Tortillas
+python -m venv venv              # Create a virtual environment
+source venv/bin/activate
 python -m pip install .\[fancy\] # Include progress bar dependency (recommended)
 python -m pip install .          # No progress bar
-```
-
-## Quickstart
-
-You can merge the main branch of the [example repo](https://github/PaideiaDilemma/tortillas-sweb) into your sweb.
-Make sure you understand the changes this introduces.
-
-```sh
-# Currently at <path_to_your_sweb_repo>
-git checkout -b tortillas-quickstart
-git remote add tortillas-sweb https://github.com/PaideiaDilemma/tortillas-sweb
-git fetch tortillas-sweb
-git merge tortillas-sweb/main
-tortillas # Should run mult.c with SUCCESS
 ```
 
 ## Manual setup
@@ -189,9 +172,9 @@ Verify the setup, by [running tortillas](#running-tortillas). \
 You can now check out [Test specifications](#test-specifications) and add test specifications
 to your tests.
 
-### CI/CD _(Optional)_
+### CI _(Optional)_
 
-If you want a CI/CD pipeline, you have the following possibilities:
+If you want a CI pipeline, you have the following possibilities:
 
 #### 1. Set up a [gitlab runner](https://docs.gitlab.com/runner/)
 This requires a publicly accessible server. If you have your own runner, you can add it to your repository.
@@ -206,7 +189,7 @@ Make sure you use a __private repo__ though.
 
 Of course, this way, your pipeline will not be visible within gitlab.
 
-<sub><sup>If you have another way of running a CI/CD pipeline, add it here!</sup></sub>
+<sub><sup>If you have another way of running a CI pipeline, add it here!</sup></sub>
 
 ## Cli Usage
 See `tortillas --help`
