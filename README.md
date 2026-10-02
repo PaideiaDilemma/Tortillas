@@ -50,7 +50,27 @@ _(Github requires you to be logged in to see the workflow output)_.
 
 ## Installation
 
+You can install Tortillas as a standalone CLI tool via [`uv`](https://docs.astral.sh/uv/) (recommended) or build it manually using standard `venv` and `pip`.
+
+### Option 1: Via `uv tool` (Fastest & Standalone)
+
+If you have `uv` installed, you can install `tortillas` directly from Git without manually cloning the repository or managing virtual environments:
+
+Install with progress bar support:
+
+```sh
+uv tool install "tortillas[fancy] @ git+https://github.com/PaideiaDilemma/Tortillas.git"
 ```
+
+Standard install (without progress bar):
+
+```sh
+uv tool install "git+https://github.com/PaideiaDilemma/Tortillas.git"
+```
+
+### Option 2: Classic `venv` & `pip`
+
+```sh
 git clone https://github.com/PaideiaDilemma/Tortillas
 cd Tortillas
 python -m venv venv              # Create a virtual environment
