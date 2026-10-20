@@ -186,7 +186,8 @@ class TestRunner:
         # Testing finished
 
         self.success = not any(
-            test_run.result.status in (TestStatus.FAILED, TestStatus.PANIC, TestStatus.TIMEOUT)
+            test_run.result.status
+            in (TestStatus.FAILED, TestStatus.PANIC, TestStatus.TIMEOUT)
             for test_run in self.test_runs
         )
 
@@ -204,34 +205,38 @@ class TestRunner:
         a summary of all errors that occurred.
         """
 
-        def markdown_table_row(cols: list[str], widths: list[int] = [40, 20]) -> str:
-            assert len(widths) == len(cols)
-            res = "|"
-            for cell, width in zip(cols, widths):
-                padding = width - len(cell) - 2
-                if padding < 0:
-                    raise ValueError(f'"{cell}" is to long ' "for the table width")
-                res += f" {cell}{' '*padding}|"
-            return res + "\n"
+        def markdown_table_row(cells: list[str], widths: list[int]) -> str:
+            row = "|"
+            for cell, width in zip(cells, widths):
+                row += f" {cell}{' ' * (width - len(cell) - 2)}|"
+            return row + "\n"
 
-        def markdown_table_delim(widths: list[int] = [40, 20]):
-            res = "|"
+        def markdown_table_delim(widths: list[int]) -> str:
+            row = "|"
             for width in widths:
-                res += f" {'-'*(width-3)} |"
-            return res + "\n"
+                row += f" {'-' * (width - 3)} |"
+            return row + "\n"
 
         self.test_runs.sort(key=repr)
         self.test_runs.sort(key=(lambda test: test.result.status.value))
 
-        summary = ""
-        summary += markdown_table_row(["Test run", "Result"])
-        summary += markdown_table_delim()
-
-        for spec in self.disabled_specs:
-            summary += markdown_table_row([spec.test_name, TestStatus.DISABLED.name])
-
+        header = ["Test run", "Result"]
+        rows = [
+            [spec.test_name, TestStatus.DISABLED.name] for spec in self.disabled_specs
+        ]
         for run in self.test_runs:
-            summary += markdown_table_row([repr(run), run.result.status.name])
+            rows.append([repr(run), run.result.status.name])
+
+        # Grow the columns, so long test names do not break the table.
+        widths = [40, 20]
+        for row in [header, *rows]:
+            for index, cell in enumerate(row):
+                widths[index] = max(widths[index], len(cell) + 3)
+
+        summary = markdown_table_row(header, widths)
+        summary += markdown_table_delim(widths)
+        for row in rows:
+            summary += markdown_table_row(row, widths)
 
         if not self.success:
             failed_runs = (
