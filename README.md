@@ -1,13 +1,13 @@
 <div align = center>
 
-# :flatbread: Tortillas - _A test runner for [IAIK/sweb](https://github.com/IAIK/sweb)_ :flatbread:
+# :flatbread: Tortillas - _A test runner for [ISEC/sweb](https://github.com/isec-tugraz/sweb)_ :flatbread:
 
 ![Demo](https://github.com/PaideiaDilemma/Tortillas/actions/workflows/demo_ci.yml/badge.svg)
 ![Internal tests](https://github.com/PaideiaDilemma/Tortillas/actions/workflows/internal_tests_ci.yml/badge.svg)
 
 </div>
 
-This program might be useful for students doing the [operating systems course](https://www.iaik.tugraz.at/course/operating-systems) at TU Graz.
+This program might be useful for students doing the [operating systems course](https://www.isec.tugraz.at/course/operating-systems) at TU Graz.
 
 Tortillas is here to help with testing your sweb code. \
 It takes your test cases and runs them in individual Qemu instances, while logging the output and monitoring for errors.
@@ -180,7 +180,7 @@ If you want a CI pipeline, you have the following possibilities:
 This requires a publicly accessible server. If you have your own runner, you can add it to your repository.
 
 You can use a workflow similar to [`gitlab-ci-example.yml`](gitlab-ci-example.yml)
-This might be the best solution, but has the caveats of _you needing a server_ and _not being able to upload artifacts_ (I think it is disabled on IAIK gitlab).
+This might be the best solution, but has the caveats of _you needing a server_ and _not being able to upload artifacts_ (I think it is disabled on ISEC gitlab).
 
 #### 2. Set up a [repository mirror](https://docs.gitlab.com/ee/user/project/repository/mirror/)
 It is possible to mirror your gitlab sweb repo to github,
